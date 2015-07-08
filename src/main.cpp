@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
         vector<Instruction> memory(256);
 
         for (string line; getline(infile, line);) {
-            if (! trim(line).empty()) {
+            if (!trim(line).empty()) {
                 auto instr = assembler.assemble(line);
                 memory[index++] = instr;
             }
