@@ -1,1 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -Wall -std=c++1y -O2 -g -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/beatcomputer.dir/assembler.cpp.o CMakeFiles/beatcomputer.dir/core.cpp.o CMakeFiles/beatcomputer.dir/main.cpp.o CMakeFiles/beatcomputer.dir/trim.cpp.o  -o beatcomputer  -lncurses 
