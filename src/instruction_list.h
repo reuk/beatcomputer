@@ -13,8 +13,7 @@ public:
     InstructionList(const InstructionManager & im = InstructionManager());
 
     Instruction assemble(std::string & str) const;
-    void execute(Core & core, std::vector<Instruction> & memory,
-                 Instruction instr) const;
+    void execute(Core & core, std::vector<Instruction> & memory) const;
 
 private:
     void build_assembly_table(const InstructionManager & im);

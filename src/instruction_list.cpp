@@ -31,8 +31,8 @@ Instruction InstructionList::assemble(string & str) const {
     return i->second->parse(tokens);
 }
 
-void InstructionList::execute(Core & core, vector<Instruction> & memory,
-                              Instruction instr) const {
+void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
+    auto instr = memory[core.ip];
     auto type = get_op_type(instr.r.op);
 
     switch (type) {

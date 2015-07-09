@@ -34,7 +34,7 @@ int main(int argc, char ** argv) {
         Core core;
 
         for (auto i = 0; i != 10; ++i) {
-            instruction_list.execute(core, memory, memory[core.ip]);
+            instruction_list.execute(core, memory);
             core.print_state();
 
             cout << endl << endl;
