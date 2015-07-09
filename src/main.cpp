@@ -1,4 +1,3 @@
-#include "assembler.h"
 #include "core.h"
 #include "trim.h"
 #include "instruction_list.h"
@@ -33,7 +32,7 @@ int main(int argc, char ** argv) {
         Core core;
 
         for (auto i = 0; i != 10; ++i) {
-            core.execute_instruction(memory);
+            instruction_list.execute(core, memory, memory[core.ip]);
             core.print_state();
 
             cout << endl << endl;

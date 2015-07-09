@@ -41,7 +41,7 @@ InstructionList::InstructionList()
         })
 {
     build_assembly_table();
-    build_execution_table();
+    build_execution_tables();
 }
 
 Instruction InstructionList::assemble(string & str) const {
@@ -60,13 +60,40 @@ Instruction InstructionList::assemble(string & str) const {
 }
 
 void InstructionList::execute(Core & core, vector<Instruction> & memory, Instruction instr) const {
+    auto type = get_op_type(instr.raw);
 
+    switch (type) {
+        case OpType::R: {
+            auto i = execution_r_table.find(instr.r.funct);
+            if (i == execution_r_table.end()) {
+                throw runtime_error("no such function code");
+            }
+            i->second->execute(core, memory, instr.r);
+            break;
+        }
+        case OpType::I: {
+            auto i = execution_i_table.find(instr.i.op);
+            if (i == execution_i_table.end()) {
+                throw runtime_error("no such op code");
+            }
+            i->second->execute(core, memory, instr.i);
+            break;
+        }
+        case OpType::J: {
+            auto i = execution_j_table.find(instr.j.op);
+            if (i == execution_j_table.end()) {
+                throw runtime_error("no such op code");
+            }
+            i->second->execute(core, memory, instr.j);
+            break;
+        }
+    }
 }
 
 void InstructionList::build_assembly_table() {
-
+    //  TODO
 }
 
-void InstructionList::build_execution_table() {
-
+void InstructionList::build_execution_tables() {
+    //  TODO
 }

@@ -13,7 +13,7 @@ public:
     InstructionDescriptor(const std::string & str, uint32_t id);
 
     virtual Instruction parse(const std::vector<std::string> & str) const = 0;
-    virtual void execute(Core & core, Instruction instr) const = 0;
+    virtual void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const = 0;
 
     std::string get_string() const;
     uint32_t get_id_code() const;
@@ -33,7 +33,7 @@ public:
         return parse_specific(str);
     }
 
-    void execute(Core & core, Instruction instr) const override {
+    void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const override {
         execute_specific(core, instr);
     }
 
@@ -48,7 +48,7 @@ public:
         return parse_specific(str);
     }
 
-    void execute(Core & core, Instruction instr) const override {
+    void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const override {
         execute_specific(core, instr);
     }
 
@@ -73,7 +73,7 @@ public:
         return parse_specific(str);
     }
 
-    void execute(Core & core, Instruction instr) const override {
+    void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const override {
         execute_specific(core, instr);
     }
 
@@ -96,7 +96,7 @@ public:
         return parse_specific(str);
     }
 
-    void execute(Core & core, Instruction instr) const override {
+    void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const override {
         execute_specific(core, instr);
     }
 
