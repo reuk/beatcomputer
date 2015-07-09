@@ -3,6 +3,7 @@
 #include "instruction_descriptor.h"
 
 #include <vector>
+#include <memory>
 
 class InstructionManager {
 public:

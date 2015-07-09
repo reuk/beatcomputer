@@ -2,6 +2,8 @@
 
 #include "instruction_structs.h"
 
+#include <memory>
+
 using namespace std;
 
 InstructionManager::InstructionManager()

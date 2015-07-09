@@ -4,6 +4,10 @@
 
 #include <istream>
 #include <sstream>
+#include <memory>
+#include <algorithm>
+#include <iterator>
+#include <bitset>
 
 using namespace std;
 
