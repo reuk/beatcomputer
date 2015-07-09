@@ -4,10 +4,9 @@ Assembly Live Coding Machine
 Todo
 ----
 
-* some centralised way of adding instructions (parse rules, opcodes, execution)
-* check that unsigned versions of instructions work properly
-    * or just remove unsigned instructions LOL
-* add overflow trap
+* check that math instructions work properly
+    * they might do just unsigned math whereas I want just signed probably
+* add float support
 * ncurses interface with visualiser for registers
 * labels (symbol table)
 * comments
@@ -18,8 +17,14 @@ Todo
 Done
 ----
 
+* some centralised way of adding instructions (parse rules, opcodes, execution)
+    * to add an instruction, add a specialisation of
+      `Instruction[RIJ]Descriptor` (defined in instruction_descriptor.h), then
+      register it in the constructor of `InstructionManager` (defined in
+      instruction_manager.cpp).
 
 Maybe
 -----
 
 * limit number of usable registers
+* overflow trap

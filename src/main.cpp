@@ -17,6 +17,7 @@ int main(int argc, char ** argv) {
         }
 
         InstructionList instruction_list;
+
         ifstream infile(argv[1]);
 
         auto index = 0;
@@ -25,6 +26,8 @@ int main(int argc, char ** argv) {
         for (string line; getline(infile, line);) {
             if (!trim(line).empty()) {
                 auto instr = instruction_list.assemble(line);
+                cout << index << " " << instr.raw << " ("
+                     << bitset<32>(instr.raw) << ")" << endl;
                 memory[index++] = instr;
             }
         }

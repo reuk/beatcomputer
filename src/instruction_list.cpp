@@ -7,8 +7,7 @@
 
 using namespace std;
 
-InstructionList::InstructionList(const InstructionManager & im)
-{
+InstructionList::InstructionList(const InstructionManager & im) {
     build_assembly_table(im);
     build_execution_tables(im);
 }
@@ -28,35 +27,52 @@ Instruction InstructionList::assemble(string & str) const {
     return i->second->parse(tokens);
 }
 
-void InstructionList::execute(Core & core, vector<Instruction> & memory, Instruction instr) const {
-    auto type = get_op_type(instr.raw);
+void InstructionList::execute(Core & core, vector<Instruction> & memory,
+                              Instruction instr) const {
+    auto type = get_op_type(instr.r.op);
 
     switch (type) {
         case OpType::R: {
             auto i = execution_r_table.find(instr.r.funct);
             if (i == execution_r_table.end()) {
-                throw runtime_error("no such function code");
+                stringstream ss;
+                ss << "no such function code: " << instr.r.funct << endl;
+                ss << "full instruction: " << instr.raw << " ("
+                   << bitset<32>(instr.raw) << ")" << endl;
+                throw runtime_error(ss.str());
             }
             i->second->execute(core, memory, instr.r);
             break;
         }
+
         case OpType::I: {
             auto i = execution_i_table.find(instr.i.op);
             if (i == execution_i_table.end()) {
-                throw runtime_error("no such op code");
+                stringstream ss;
+                ss << "no such op code: " << instr.i.op << endl;
+                ss << "full instruction: " << instr.raw << " ("
+                   << bitset<32>(instr.raw) << ")" << endl;
+                throw runtime_error(ss.str());
             }
             i->second->execute(core, memory, instr.i);
             break;
         }
+
         case OpType::J: {
             auto i = execution_j_table.find(instr.j.op);
             if (i == execution_j_table.end()) {
-                throw runtime_error("no such op code");
+                stringstream ss;
+                ss << "no such op code: " << instr.j.op;
+                ss << "full instruction: " << instr.raw << " ("
+                   << bitset<32>(instr.raw) << ")" << endl;
+                throw runtime_error(ss.str());
             }
             i->second->execute(core, memory, instr.j);
             break;
         }
     }
+
+    core.ip += 1;
 }
 
 void InstructionList::build_assembly_table(const InstructionManager & im) {
