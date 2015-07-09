@@ -2,15 +2,18 @@
 
 #include "trim.h"
 #include "opcodes.h"
+#include "parse_functions.h"
 
 #include <map>
 #include <istream>
 #include <sstream>
-#include <regex>
 #include <iostream>
 #include <bitset>
 
 using namespace std;
+
+Assembler::Assembler(InstructionList & instruction_list)
+    : instruction_list(instruction_list) {}
 
 Instruction Assembler::assemble(string & str) const {
     trim(str);
@@ -20,6 +23,7 @@ Instruction Assembler::assemble(string & str) const {
     vector<string> tokens((istream_iterator<string>(to_tokenize)),
                           istream_iterator<string>());
 
+    /*
     auto r = assemble_r(tokens);
     auto i = assemble_i(tokens);
     auto j = assemble_j(tokens);
@@ -36,29 +40,12 @@ Instruction Assembler::assemble(string & str) const {
     Instruction iraw;
     iraw.raw = raw;
     return iraw;
+    */
+
+    return instruction_list.parse(tokens);
 }
 
-uint32_t parse_register(const std::string & str) {
-    //  TODO some registers could have aliases
-    regex reg("R([1-9][0-9]+|[0-9])");
-    smatch m;
-
-    if (!regex_match(str, m, reg)) {
-        throw runtime_error("no such register");
-    }
-
-    return atoi(m[1].str().c_str());
-}
-
-uint32_t parse_immediate(const std::string & str) {
-    return strtol(str.c_str(), NULL, 0);
-}
-
-uint32_t parse_address(const std::string & str) {
-    //  TODO some addresses come from the symbol table
-    return strtol(str.c_str(), NULL, 0);
-}
-
+/*
 InstructionR Assembler::assemble_r(const vector<string> & str) const {
     map<string, uint32_t> opcode_strings = {
         {"ADD", ADD},
@@ -184,3 +171,4 @@ InstructionJ Assembler::assemble_j(const vector<string> & str) const {
 
     return InstructionJ{0};
 }
+*/

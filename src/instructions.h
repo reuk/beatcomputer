@@ -24,9 +24,10 @@ struct InstructionJ {
 };
 
 struct Instruction {
-    Instruction()
-        : raw(0) {
-    }
+    Instruction();
+    Instruction(InstructionR instr);
+    Instruction(InstructionI instr);
+    Instruction(InstructionJ instr);
 
     union {
         InstructionR r;
@@ -34,4 +35,12 @@ struct Instruction {
         InstructionJ j;
         uint32_t raw;
     };
+
+    operator InstructionR() const;
+    operator InstructionI() const;
+    operator InstructionJ() const;
 };
+
+enum class OpType { R, I, J };
+OpType get_op_type(uint32_t operation);
+

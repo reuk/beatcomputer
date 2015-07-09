@@ -1,6 +1,7 @@
 #include "assembler.h"
 #include "core.h"
 #include "trim.h"
+#include "instruction_list.h"
 
 //#include <ncurses.h>
 
@@ -16,8 +17,7 @@ int main(int argc, char ** argv) {
             throw runtime_error("expected one argument");
         }
 
-        Assembler assembler;
-
+        InstructionList instruction_list;
         ifstream infile(argv[1]);
 
         auto index = 0;
@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
 
         for (string line; getline(infile, line);) {
             if (!trim(line).empty()) {
-                auto instr = assembler.assemble(line);
+                auto instr = instruction_list.assemble(line);
                 memory[index++] = instr;
             }
         }

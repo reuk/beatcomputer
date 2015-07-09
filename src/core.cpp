@@ -13,6 +13,7 @@ Core::Core()
     , ip(0) {
 }
 
+/*
 void Core::execute_instruction(Ram & memory) {
     auto instruction = memory[ip];
     auto operation = instruction.r.op;
@@ -144,18 +145,7 @@ void Core::execute_j(InstructionJ j) {
             break;
     }
 }
-
-Core::OpType Core::get_op_type(uint32_t operation) {
-    switch (operation) {
-        case 0x00:
-            return OpType::R;
-        case 0x02:
-        case 0x03:
-            return OpType::J;
-        default:
-            return OpType::I;
-    }
-}
+*/
 
 void Core::print_state() const {
     auto pr32 = [](auto name, auto i) {
