@@ -1,7 +1,7 @@
 #include "instructions.h"
 
-Instruction::Instruction()
-    : raw(0) {
+Instruction::Instruction(uint32_t raw)
+    : raw(raw) {
 }
 Instruction::Instruction(InstructionR instr)
     : r(instr) {

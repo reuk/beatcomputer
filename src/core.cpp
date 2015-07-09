@@ -8,7 +8,10 @@
 using namespace std;
 
 Core::Core()
-    : sp(reg[29])
+    : reg({0})
+    , lo(0)
+    , hi(0)
+    , sp(reg[29])
     , ip(0) {
 }
 

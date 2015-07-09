@@ -24,7 +24,7 @@ struct InstructionJ {
 };
 
 struct Instruction {
-    Instruction();
+    Instruction(uint32_t raw = 0);
     Instruction(InstructionR instr);
     Instruction(InstructionI instr);
     Instruction(InstructionJ instr);

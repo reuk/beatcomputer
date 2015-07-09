@@ -22,13 +22,11 @@ int main(int argc, char ** argv) {
         ifstream infile(argv[1]);
 
         auto index = 0;
-        vector<Instruction> memory(256);
+        vector<Instruction> memory(256, 0);
 
         for (string line; getline(infile, line);) {
             if (!trim(line).empty()) {
                 auto instr = instruction_list.assemble(line);
-                cout << index << " " << instr.raw << " ("
-                     << bitset<32>(instr.raw) << ")" << endl;
                 memory[index++] = instr;
             }
         }
