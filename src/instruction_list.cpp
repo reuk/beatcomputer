@@ -7,41 +7,10 @@
 
 using namespace std;
 
-InstructionList::InstructionList()
-    : r_instructions({
-            make_shared<    Instruction__ADD    >(),
-            make_shared<    Instruction__AND    >(),
-            make_shared<    Instruction__DIV    >(),
-            make_shared<    Instruction__JR     >(),
-            make_shared<    Instruction__MFHI   >(),
-            make_shared<    Instruction__MFLO   >(),
-            make_shared<    Instruction__MULT   >(),
-            make_shared<    Instruction__NOR    >(),
-            make_shared<    Instruction__XOR    >(),
-            make_shared<    Instruction__OR     >(),
-            make_shared<    Instruction__SLT    >(),
-            make_shared<    Instruction__SLL    >(),
-            make_shared<    Instruction__SRL    >(),
-            make_shared<    Instruction__SUB    >(),
-        })
-    , i_instructions({
-            make_shared<    Instruction__ADDI   >(),
-            make_shared<    Instruction__ANDI   >(),
-            make_shared<    Instruction__BEQ    >(),
-            make_shared<    Instruction__BNE    >(),
-            make_shared<    Instruction__LW     >(),
-            make_shared<    Instruction__LUI    >(),
-            make_shared<    Instruction__ORI    >(),
-            make_shared<    Instruction__SLTI   >(),
-            make_shared<    Instruction__SW     >(),
-        })
-    , j_instructions({
-            make_shared<    Instruction__J      >(),
-            make_shared<    Instruction__JAL    >(),
-        })
+InstructionList::InstructionList(const InstructionManager & im)
 {
-    build_assembly_table();
-    build_execution_tables();
+    build_assembly_table(im);
+    build_execution_tables(im);
 }
 
 Instruction InstructionList::assemble(string & str) const {
@@ -90,10 +59,20 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory, Instruc
     }
 }
 
-void InstructionList::build_assembly_table() {
-    //  TODO
+void InstructionList::build_assembly_table(const InstructionManager & im) {
+    for (auto i : im.r_instructions)
+        assembly_table[i->get_string()] = i;
+    for (auto i : im.i_instructions)
+        assembly_table[i->get_string()] = i;
+    for (auto i : im.j_instructions)
+        assembly_table[i->get_string()] = i;
 }
 
-void InstructionList::build_execution_tables() {
-    //  TODO
+void InstructionList::build_execution_tables(const InstructionManager & im) {
+    for (auto i : im.r_instructions)
+        execution_r_table[i->get_id_code()] = i;
+    for (auto i : im.i_instructions)
+        execution_i_table[i->get_id_code()] = i;
+    for (auto i : im.j_instructions)
+        execution_j_table[i->get_id_code()] = i;
 }

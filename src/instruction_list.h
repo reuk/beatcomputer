@@ -1,6 +1,6 @@
 #pragma once
 
-#include "instruction_descriptor.h"
+#include "instruction_manager.h"
 
 #include <map>
 #include <vector>
@@ -8,18 +8,14 @@
 
 class InstructionList {
 public:
-    InstructionList();
+    InstructionList(const InstructionManager & im = InstructionManager());
 
     Instruction assemble(std::string & str) const;
     void execute(Core & core, std::vector<Instruction> & memory, Instruction instr) const;
 
 private:
-    void build_assembly_table();
-    void build_execution_tables();
-
-    std::vector<std::shared_ptr<InstructionRDescriptor>> r_instructions;
-    std::vector<std::shared_ptr<InstructionIDescriptor>> i_instructions;
-    std::vector<std::shared_ptr<InstructionJDescriptor>> j_instructions;
+    void build_assembly_table(const InstructionManager & im);
+    void build_execution_tables(const InstructionManager & im);
 
     std::map<std::string, std::shared_ptr<InstructionDescriptor>> assembly_table;
 
