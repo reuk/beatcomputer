@@ -28,11 +28,10 @@ Instruction InstructionList::assemble(string & str) const {
     if (i == assembly_table.end()) {
         throw runtime_error("no such instruction");
     }
-    return i->second->parse(tokens);
+    return i->second->assemble(tokens);
 }
 
-void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
-    auto instr = memory[core.ip];
+shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(Instruction instr) const {
     auto type = get_op_type(instr.r.op);
 
     switch (type) {
@@ -45,8 +44,7 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
                    << bitset<32>(instr.raw) << ")" << endl;
                 throw runtime_error(ss.str());
             }
-            i->second->execute(core, memory, instr.r);
-            break;
+            return i->second;
         }
 
         case OpType::I: {
@@ -58,8 +56,7 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
                    << bitset<32>(instr.raw) << ")" << endl;
                 throw runtime_error(ss.str());
             }
-            i->second->execute(core, memory, instr.i);
-            break;
+            return i->second;
         }
 
         case OpType::J: {
@@ -71,11 +68,18 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
                    << bitset<32>(instr.raw) << ")" << endl;
                 throw runtime_error(ss.str());
             }
-            i->second->execute(core, memory, instr.j);
-            break;
+            return i->second;
         }
     }
+}
 
+string InstructionList::disassemble(Instruction instr) const {
+    return descriptor_for_instruction(instr)->disassemble(instr);
+}
+
+void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
+    auto instr = memory[core.ip];
+    descriptor_for_instruction(instr)->execute(core, memory, instr);
     core.ip += 1;
 }
 

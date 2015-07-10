@@ -7,12 +7,14 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 class InstructionDescriptor {
 public:
     InstructionDescriptor(const std::string & str, uint32_t id);
 
-    virtual Instruction parse(const std::vector<std::string> & str) const = 0;
+    virtual Instruction assemble(const std::vector<std::string> & str) const = 0;
+    virtual std::string disassemble(Instruction instr) const = 0;
     virtual void execute(Core & core, std::vector<Instruction> & memory,
                          Instruction instr) const = 0;
 
@@ -43,8 +45,12 @@ public:
         : InstructionDescriptor(str, id) {
     }
 
-    Instruction parse(const std::vector<std::string> & str) const override {
-        return parse_specific(str);
+    Instruction assemble(const std::vector<std::string> & str) const override {
+        return assemble_specific(str);
+    }
+
+    std::string disassemble(Instruction instr) const override {
+        return disassemble_specific(instr);
     }
 
     void execute(Core & core, std::vector<Instruction> & memory,
@@ -60,7 +66,7 @@ public:
                                   uint32_t & rs, uint32_t & rt, uint32_t & rd,
                                   uint32_t shamt) const = 0;
 
-    virtual InstructionR parse_specific(
+    virtual InstructionR assemble_specific(
         const std::vector<std::string> & str) const {
         InstructionR r;
         r.op = 0x0;
@@ -70,6 +76,18 @@ public:
         r.rt = parse_register(str[3]);
         r.shamt = 0x0;
         return r;
+    }
+
+    virtual std::string disassemble_specific(InstructionR instr) const {
+        std::stringstream ss;
+
+        ss << get_string()
+           << " R" << instr.rd
+           << " R" << instr.rs
+           << " R" << instr.rt
+           << std::endl;
+
+        return ss.str();
     }
 };
 
@@ -81,8 +99,12 @@ public:
         : InstructionDescriptor(str, id) {
     }
 
-    Instruction parse(const std::vector<std::string> & str) const override {
-        return parse_specific(str);
+    Instruction assemble(const std::vector<std::string> & str) const override {
+        return assemble_specific(str);
+    }
+
+    std::string disassemble(Instruction instr) const override {
+        return disassemble_specific(instr);
     }
 
     void execute(Core & core, std::vector<Instruction> & memory,
@@ -97,7 +119,7 @@ public:
                                   uint32_t & rs, uint32_t & rt,
                                   uint32_t immediate) const = 0;
 
-    virtual InstructionI parse_specific(
+    virtual InstructionI assemble_specific(
         const std::vector<std::string> & str) const {
         InstructionI r;
         r.op = get_id_code();
@@ -105,6 +127,18 @@ public:
         r.rs = parse_register(str[2]);
         r.immediate = parse_immediate(str[3]);
         return r;
+    }
+
+    virtual std::string disassemble_specific(InstructionI instr) const {
+        std::stringstream ss;
+
+        ss << get_string()
+           << " R" << instr.rt
+           << " R" << instr.rs
+           << " " << instr.immediate
+           << std::endl;
+
+        return ss.str();
     }
 };
 
@@ -116,8 +150,12 @@ public:
         : InstructionDescriptor(str, id) {
     }
 
-    Instruction parse(const std::vector<std::string> & str) const override {
-        return parse_specific(str);
+    Instruction assemble(const std::vector<std::string> & str) const override {
+        return assemble_specific(str);
+    }
+
+    std::string disassemble(Instruction instr) const override {
+        return disassemble_specific(instr);
     }
 
     void execute(Core & core, std::vector<Instruction> & memory,
@@ -129,12 +167,22 @@ public:
                                   std::vector<Instruction> & memory,
                                   uint32_t address) const = 0;
 
-    virtual InstructionJ parse_specific(
+    virtual InstructionJ assemble_specific(
         const std::vector<std::string> & str) const {
         InstructionJ r;
         r.op = get_id_code();
         r.address = parse_address(str[1]);
         return r;
+    }
+
+    virtual std::string disassemble_specific(InstructionJ instr) const {
+        std::stringstream ss;
+
+        ss << get_string()
+           << " " << instr.address
+           << std::endl;
+
+        return ss.str();
     }
 };
 

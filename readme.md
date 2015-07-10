@@ -4,8 +4,10 @@ Assembly Live Coding Machine
 Todo
 ----
 
-* check that math instructions work properly
-    * they might do just unsigned math whereas I want just signed probably
+* disassembler
+* unit tests!
+    * check that math instructions work properly
+        * they might do just unsigned math whereas I want just signed probably
 * add float support
 * ncurses interface with visualiser for registers
 * labels (symbol table)
