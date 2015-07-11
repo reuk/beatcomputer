@@ -10,6 +10,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__AND : public InstructionRDescriptor {
@@ -18,6 +19,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__DIV : public InstructionRDescriptor {
@@ -26,6 +28,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__JR : public InstructionRDescriptor {
@@ -34,6 +37,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__MFHI : public InstructionRDescriptor {
@@ -42,6 +46,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__MFLO : public InstructionRDescriptor {
@@ -50,6 +55,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__MULT : public InstructionRDescriptor {
@@ -58,6 +64,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__NOR : public InstructionRDescriptor {
@@ -66,6 +73,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__XOR : public InstructionRDescriptor {
@@ -74,6 +82,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__OR : public InstructionRDescriptor {
@@ -82,6 +91,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SLT : public InstructionRDescriptor {
@@ -90,6 +100,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SLL : public InstructionRDescriptor {
@@ -98,6 +109,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SRL : public InstructionRDescriptor {
@@ -106,6 +118,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SUB : public InstructionRDescriptor {
@@ -114,6 +127,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt, uint32_t & rd,
                           uint32_t shamt) const override;
+    std::string get_tooltip() const override;
 };
 
 //  I instructions
@@ -124,6 +138,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__ANDI : public InstructionIDescriptor {
@@ -132,6 +147,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__BEQ : public InstructionIDescriptor {
@@ -140,6 +156,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__BNE : public InstructionIDescriptor {
@@ -148,6 +165,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__LW : public InstructionIDescriptor {
@@ -156,6 +174,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__LUI : public InstructionIDescriptor {
@@ -164,6 +183,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__ORI : public InstructionIDescriptor {
@@ -172,6 +192,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SLTI : public InstructionIDescriptor {
@@ -180,6 +201,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__SW : public InstructionIDescriptor {
@@ -188,6 +210,7 @@ public:
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t & rs, uint32_t & rt,
                           uint32_t immediate) const override;
+    std::string get_tooltip() const override;
 };
 
 //  J instructions
@@ -197,6 +220,7 @@ public:
     Instruction__J();
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t address) const override;
+    std::string get_tooltip() const override;
 };
 
 class Instruction__JAL : public InstructionJDescriptor {
@@ -204,4 +228,5 @@ public:
     Instruction__JAL();
     void execute_specific(Core & core, std::vector<Instruction> & memory,
                           uint32_t address) const override;
+    std::string get_tooltip() const override;
 };

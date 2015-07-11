@@ -1,13 +1,10 @@
-XOR r1 r1 r1
 ORI r1 r1 0x1
-
-XOR r2 r2 r2
 ORI r2 r2 0x5
-
 ADD r3 r2 r1
-
-XOR r4 r4 r4
 ADDI r4 r4 0x10
-
-XOR r5 r5 r5
 ADDI r5 r4 0x20
+ADDI r10 r10 0x1
+LW r11 r10 0
+ADDI r11 r11 0x1000
+SW r11 r12 0x1
+J 0

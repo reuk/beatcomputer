@@ -13,13 +13,16 @@ class InstructionDescriptor {
 public:
     InstructionDescriptor(const std::string & str, uint32_t id);
 
-    virtual Instruction assemble(const std::vector<std::string> & str) const = 0;
+    virtual Instruction assemble(
+        const std::vector<std::string> & str) const = 0;
     virtual std::string disassemble(Instruction instr) const = 0;
     virtual void execute(Core & core, std::vector<Instruction> & memory,
                          Instruction instr) const = 0;
 
     std::string get_string() const;
     uint32_t get_id_code() const;
+
+    virtual std::string get_tooltip() const = 0;
 
     void set_string(const std::string & str);
     void set_id_code(uint32_t id);
@@ -81,11 +84,8 @@ public:
     virtual std::string disassemble_specific(InstructionR instr) const {
         std::stringstream ss;
 
-        ss << get_string()
-           << " R" << instr.rd
-           << " R" << instr.rs
-           << " R" << instr.rt
-           << std::endl;
+        ss << get_string() << " R" << instr.rd << " R" << instr.rs << " R"
+           << instr.rt;
 
         return ss.str();
     }
@@ -132,11 +132,8 @@ public:
     virtual std::string disassemble_specific(InstructionI instr) const {
         std::stringstream ss;
 
-        ss << get_string()
-           << " R" << instr.rt
-           << " R" << instr.rs
-           << " " << instr.immediate
-           << std::endl;
+        ss << get_string() << " R" << instr.rt << " R" << instr.rs << " "
+           << instr.immediate;
 
         return ss.str();
     }
@@ -178,9 +175,7 @@ public:
     virtual std::string disassemble_specific(InstructionJ instr) const {
         std::stringstream ss;
 
-        ss << get_string()
-           << " " << instr.address
-           << std::endl;
+        ss << get_string() << " " << instr.address;
 
         return ss.str();
     }

@@ -14,13 +14,15 @@ public:
 
     Instruction assemble(std::string & str) const;
     std::string disassemble(Instruction instr) const;
+    std::string tooltip(Instruction instr) const;
     void execute(Core & core, std::vector<Instruction> & memory) const;
 
 private:
     void build_assembly_table(const InstructionManager & im);
     void build_execution_tables(const InstructionManager & im);
 
-    std::shared_ptr<InstructionDescriptor> descriptor_for_instruction(Instruction r) const;
+    std::shared_ptr<InstructionDescriptor> descriptor_for_instruction(
+        Instruction r) const;
 
     std::map<std::string, std::shared_ptr<InstructionDescriptor>>
         assembly_table;

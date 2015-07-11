@@ -8,7 +8,7 @@
 using namespace std;
 
 Core::Core()
-    : reg({0})
+    : reg()
     , lo(0)
     , hi(0)
     , sp(reg[29])

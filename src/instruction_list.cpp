@@ -31,7 +31,8 @@ Instruction InstructionList::assemble(string & str) const {
     return i->second->assemble(tokens);
 }
 
-shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(Instruction instr) const {
+shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
+    Instruction instr) const {
     auto type = get_op_type(instr.r.op);
 
     switch (type) {
@@ -77,10 +78,16 @@ string InstructionList::disassemble(Instruction instr) const {
     return descriptor_for_instruction(instr)->disassemble(instr);
 }
 
+string InstructionList::tooltip(Instruction instr) const {
+    return descriptor_for_instruction(instr)->get_tooltip();
+}
+
 void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
     auto instr = memory[core.ip];
     descriptor_for_instruction(instr)->execute(core, memory, instr);
-    core.ip += 1;
+
+    if (get_op_type(instr.r.op) != OpType::J)
+        core.ip += 1;
 }
 
 void InstructionList::build_assembly_table(const InstructionManager & im) {
