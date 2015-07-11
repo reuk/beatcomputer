@@ -8,10 +8,13 @@ Todo
 * immediate-mode instructions should be generated for instructions that use
   constants
     * shouldn't have to specify immediate mode, it should be deduced
+* simplify instruction set
+* write special parse functions where they're needed
 * unit tests!
     * check that math instructions work properly
         * they might do just unsigned math whereas I want just signed probably
 * add float support
+* enable/disable tooltip mode
 * labels (symbol table)
 * hook up osc or midi support
 * add syscall or special register for note output
