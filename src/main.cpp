@@ -267,17 +267,11 @@ int main(int argc, char ** argv) {
         CoreWindow cw(stdscr, instruction_list, 0, 0);
         cw.set_memory(memory);
 
-        refresh();
-        cw.refresh();
-        cw.draw();
-
         for (;;) {
-            this_thread::sleep_for(std::chrono::milliseconds(500));
-            cw.execute();
-
-            refresh();
             cw.refresh();
             cw.draw();
+            this_thread::sleep_for(std::chrono::milliseconds(500));
+            cw.execute();
         }
 
     } catch (const runtime_error & re) {
