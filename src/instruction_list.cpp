@@ -35,6 +35,7 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
     Instruction instr) const {
     auto type = get_op_type(instr.r.op);
 
+    //  TODO could replace with nested maps
     switch (type) {
         case OpType::R: {
             auto i = execution_r_table.find(instr.r.funct);
