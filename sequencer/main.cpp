@@ -232,11 +232,14 @@ public:
 
 class SyncedCoreWindow : public CoreWindow, public osc::OscPacketListener {
 public:
-    SyncedCoreWindow(WINDOW *parent, const InstructionList &il, int starty, int startx)
+    SyncedCoreWindow(WINDOW *parent, const InstructionList &il, int starty,
+                     int startx)
         : CoreWindow(parent, il, starty, startx) {
     }
+
 protected:
-    void ProcessMessage(const osc::ReceivedMessage & m, const IpEndpointName & ip) override {
+    void ProcessMessage(const osc::ReceivedMessage &m,
+                        const IpEndpointName &ip) override {
         try {
             if (m.AddressPattern() == string("/time_server")) {
                 osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
@@ -249,8 +252,9 @@ protected:
                     refresh();
                 }
             }
-        } catch (const osc::Exception & e) {
-            cout << "error parsing message: " << m.AddressPattern() << ": " << e.what() << endl;
+        } catch (const osc::Exception &e) {
+            cout << "error parsing message: " << m.AddressPattern() << ": "
+                 << e.what() << endl;
         }
     }
 };
@@ -292,7 +296,8 @@ int main(int argc, char **argv) {
         cw.set_memory(memory);
         cw.draw();
 
-        UdpListeningReceiveSocket s(IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &cw);
+        UdpListeningReceiveSocket s(
+            IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &cw);
 
         s.RunUntilSigInt();
 

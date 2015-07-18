@@ -27,7 +27,7 @@ public:
     void start(const std::chrono::milliseconds & interval) override {
         stop();
         run = true;
-        timer_thread = std::thread([this, interval]{
+        timer_thread = std::thread([this, interval] {
             while (run) {
                 callback();
                 std::this_thread::sleep_for(interval);
