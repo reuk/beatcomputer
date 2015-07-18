@@ -1,2 +1,3 @@
 #!/bin/zsh
-ls src/*.(h|cpp) | xargs clang-format -i
+ls sequencer/*.(h|cpp) | xargs clang-format -i
+ls time_server/*.(h|cpp) | xargs clang-format -i

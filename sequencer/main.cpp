@@ -14,6 +14,10 @@
 #include <chrono>
 #include <thread>
 
+#include "osc/OscReceivedElements.h"
+#include "osc/OscPacketListener.h"
+#include "ip/UdpSocket.h"
+
 using namespace std;
 
 string machine_word(uint32_t word) {
@@ -22,19 +26,37 @@ string machine_word(uint32_t word) {
     return ss.str();
 }
 
-class MachineCodeWindow : public Window {
+class BoxedWindow : public Window {
 public:
-    MachineCodeWindow(WINDOW * parent, int height, int width, int starty,
-                      int startx)
+    BoxedWindow(WINDOW *parent, int height, int width, int starty, int startx)
         : Window(parent, height, width, starty, startx) {
     }
 
-    void draw(Core & core, vector<Instruction> & memory) {
+    void draw(const InstructionList &il, Core &core,
+              vector<Instruction> &memory) const {
         erase();
         box(0, 0);
 
+        draw_contents(il, core, memory);
+
+        refresh();
+    }
+
+    virtual void draw_contents(const InstructionList &il, Core &core,
+                               vector<Instruction> &memory) const = 0;
+};
+
+class MachineCodeWindow : public BoxedWindow {
+public:
+    MachineCodeWindow(WINDOW *parent, int height, int width, int starty,
+                      int startx)
+        : BoxedWindow(parent, height, width, starty, startx) {
+    }
+
+    void draw_contents(const InstructionList &il, Core &core,
+                       vector<Instruction> &memory) const override {
         auto line = 0;
-        for (const auto & i : memory) {
+        for (const auto &i : memory) {
             auto attr = line == core.ip;
 
             if (attr)
@@ -45,39 +67,31 @@ public:
 
             line += 1;
         }
-
-        refresh();
     }
 };
 
-class LabelWindow : public Window {
+class LabelWindow : public BoxedWindow {
 public:
-    LabelWindow(WINDOW * parent, int height, int width, int starty, int startx)
-        : Window(parent, height, width, starty, startx) {
+    LabelWindow(WINDOW *parent, int height, int width, int starty, int startx)
+        : BoxedWindow(parent, height, width, starty, startx) {
     }
 
-    void draw(Core & core, vector<Instruction> & memory) {
-        erase();
-        box(0, 0);
-
-        refresh();
+    void draw_contents(const InstructionList &il, Core &core,
+                       vector<Instruction> &memory) const override {
     }
 };
 
-class MnemonicWindow : public Window {
+class MnemonicWindow : public BoxedWindow {
 public:
-    MnemonicWindow(WINDOW * parent, int height, int width, int starty,
+    MnemonicWindow(WINDOW *parent, int height, int width, int starty,
                    int startx)
-        : Window(parent, height, width, starty, startx) {
+        : BoxedWindow(parent, height, width, starty, startx) {
     }
 
-    void draw(const InstructionList & il, Core & core,
-              vector<Instruction> & memory) {
-        erase();
-        box(0, 0);
-
+    void draw_contents(const InstructionList &il, Core &core,
+                       vector<Instruction> &memory) const override {
         auto line = 0;
-        for (const auto & i : memory) {
+        for (const auto &i : memory) {
             auto attr = line == core.ip;
 
             if (attr)
@@ -88,25 +102,19 @@ public:
 
             line += 1;
         }
-
-        refresh();
     }
 };
 
-class TooltipWindow : public Window {
+class TooltipWindow : public BoxedWindow {
 public:
-    TooltipWindow(WINDOW * parent, int height, int width, int starty,
-                  int startx)
-        : Window(parent, height, width, starty, startx) {
+    TooltipWindow(WINDOW *parent, int height, int width, int starty, int startx)
+        : BoxedWindow(parent, height, width, starty, startx) {
     }
 
-    void draw(const InstructionList & il, Core & core,
-              vector<Instruction> & memory) {
-        erase();
-        box(0, 0);
-
+    void draw_contents(const InstructionList &il, Core &core,
+                       vector<Instruction> &memory) const override {
         auto line = 0;
-        for (const auto & i : memory) {
+        for (const auto &i : memory) {
             auto attr = line == core.ip;
 
             if (attr)
@@ -117,22 +125,18 @@ public:
 
             line += 1;
         }
-
-        refresh();
     }
 };
 
-class CoreCoreWindow : public Window {
+class CoreCoreWindow : public BoxedWindow {
 public:
-    CoreCoreWindow(WINDOW * parent, int height, int width, int starty,
+    CoreCoreWindow(WINDOW *parent, int height, int width, int starty,
                    int startx)
-        : Window(parent, height, width, starty, startx) {
+        : BoxedWindow(parent, height, width, starty, startx) {
     }
 
-    void draw(Core & core) {
-        erase();
-        box(0, 0);
-
+    void draw_contents(const InstructionList &il, Core &core,
+                       vector<Instruction> &memory) const override {
         auto register_string = [](auto i) {
             stringstream ss;
             ss << "R" << i;
@@ -154,21 +158,18 @@ public:
 
         print_register("SP", core.sp);
         print_register("IP", core.ip);
-
-        refresh();
     }
 };
 
 class CoreWindow : public Window {
 public:
-    CoreWindow(WINDOW * parent, const InstructionList & il, int starty,
+    CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
         : Window(parent, HEIGHT,
                  WIDTH_MACHINE_CODE + WIDTH_LABEL + WIDTH_MNEMONIC +
                      WIDTH_TOOLTIP + WIDTH_CORE,
                  starty, startx)
         , il(il)
-        , tooltips_shown(true)
         , window_machine_code(*this, 0, WIDTH_MACHINE_CODE, 0, 0)
         , window_label(*this, 0, WIDTH_LABEL, 0, WIDTH_MACHINE_CODE)
         , window_mnemonic(*this, 0, WIDTH_MNEMONIC, 0,
@@ -188,17 +189,17 @@ public:
         window_core.box(0, 0);
     }
 
-    void set_memory(const vector<Instruction> & m) {
+    void set_memory(const vector<Instruction> &m) {
         auto limit = min(memory.size(), m.size());
         copy(m.begin(), m.begin() + limit, memory.begin());
     }
 
     void draw() {
-        window_machine_code.draw(core, memory);
-        window_label.draw(core, memory);
-        window_mnemonic.draw(il, core, memory);
-        window_tooltip.draw(il, core, memory);
-        window_core.draw(core);
+        for (auto i : vector<BoxedWindow *>{&window_machine_code, &window_label,
+                                            &window_mnemonic, &window_tooltip,
+                                            &window_core}) {
+            i->draw(il, core, memory);
+        }
     }
 
     void execute() {
@@ -207,7 +208,7 @@ public:
     }
 
 private:
-    const InstructionList & il;
+    const InstructionList &il;
 
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
@@ -217,8 +218,6 @@ private:
     static const int WIDTH_MNEMONIC = 2 + 20;
     static const int WIDTH_TOOLTIP = 2 + 30;
     static const int WIDTH_CORE = 2 + 5 + 8;
-
-    bool tooltips_shown;
 
     MachineCodeWindow window_machine_code;
     LabelWindow window_label;
@@ -231,7 +230,32 @@ public:
     vector<Instruction> memory;
 };
 
-int main(int argc, char ** argv) {
+class SyncedCoreWindow : public CoreWindow, public osc::OscPacketListener {
+public:
+    SyncedCoreWindow(WINDOW *parent, const InstructionList &il, int starty, int startx)
+        : CoreWindow(parent, il, starty, startx) {
+    }
+protected:
+    void ProcessMessage(const osc::ReceivedMessage & m, const IpEndpointName & ip) override {
+        try {
+            if (m.AddressPattern() == string("/time_server")) {
+                osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
+                const char *str;
+                args >> str >> osc::EndMessage;
+
+                if (str == string("tick")) {
+                    execute();
+                    draw();
+                    refresh();
+                }
+            }
+        } catch (const osc::Exception & e) {
+            cout << "error parsing message: " << m.AddressPattern() << ": " << e.what() << endl;
+        }
+    }
+};
+
+int main(int argc, char **argv) {
     try {
         initscr();
 
@@ -264,17 +288,15 @@ int main(int argc, char ** argv) {
             }
         }
 
-        CoreWindow cw(stdscr, instruction_list, 0, 0);
+        SyncedCoreWindow cw(stdscr, instruction_list, 0, 0);
         cw.set_memory(memory);
+        cw.draw();
 
-        for (;;) {
-            cw.refresh();
-            cw.draw();
-            this_thread::sleep_for(std::chrono::milliseconds(500));
-            cw.execute();
-        }
+        UdpListeningReceiveSocket s(IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &cw);
 
-    } catch (const runtime_error & re) {
+        s.RunUntilSigInt();
+
+    } catch (const runtime_error &re) {
         cout << re.what() << endl;
         return 1;
     }

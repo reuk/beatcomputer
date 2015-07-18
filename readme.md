@@ -5,21 +5,26 @@ Todo
 ----
 
 * random number generation
+
 * ncurses mode needs an editor
+
 * immediate-mode instructions should be generated for instructions that use
   constants
     * shouldn't have to specify immediate mode, it should be deduced
 * simplify instruction set
+* add float support
 * write special parse functions where they're needed
+
 * unit tests!
     * check that math instructions work properly
         * they might do just unsigned math whereas I want just signed probably
-* add float support
+
 * enable/disable tooltip mode
+
 * labels (symbol table)
-* hook up osc or midi support
+
 * add syscall or special register for note output
-* tempo sync
+* add ability for playing notes through midi/os
 
 Done
 ----
@@ -40,6 +45,8 @@ Done
             * tooltips column (can be disabled/enabled I guess)
             * register status column
     * each core gets maybe 64 words of memory
+* hook up osc or midi support
+* tempo sync
 
 Maybe
 -----
