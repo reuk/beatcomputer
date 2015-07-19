@@ -2,9 +2,6 @@
 
 using namespace std;
 
-Instruction__ADD::Instruction__ADD()
-    : InstructionRDescriptor("ADD", 0x20) {
-}
 void Instruction__ADD::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -15,9 +12,8 @@ string Instruction__ADD::get_tooltip() const {
     return "ADD a b c -> a = b + c";
 }
 
-Instruction__AND::Instruction__AND()
-    : InstructionRDescriptor("AND", 0x24) {
-}
+template<> const string B__Instruction__ADD::str = "ADD";
+
 void Instruction__AND::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -27,10 +23,8 @@ void Instruction__AND::execute_specific(Core & core,
 string Instruction__AND::get_tooltip() const {
     return "AND a b c -> a = b & c";
 }
+template<> const string B__Instruction__AND::str = "AND";
 
-Instruction__DIV::Instruction__DIV()
-    : InstructionRDescriptor("DIV", 0x1A) {
-}
 void Instruction__DIV::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -41,10 +35,8 @@ void Instruction__DIV::execute_specific(Core & core,
 string Instruction__DIV::get_tooltip() const {
     return "DIV a b -> LO = a / b, HI = a % b";
 }
+template<> const string B__Instruction__DIV::str = "DIV";
 
-Instruction__JR::Instruction__JR()
-    : InstructionRDescriptor("JR", 0x08) {
-}
 void Instruction__JR::execute_specific(Core & core,
                                        std::vector<Instruction> & memory,
                                        uint32_t & rs, uint32_t & rt,
@@ -54,10 +46,8 @@ void Instruction__JR::execute_specific(Core & core,
 string Instruction__JR::get_tooltip() const {
     return "JR a -> IP = a";
 }
+template<> const string B__Instruction__JR::str = "JR";
 
-Instruction__MFHI::Instruction__MFHI()
-    : InstructionRDescriptor("MFHI", 0x10) {
-}
 void Instruction__MFHI::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -67,10 +57,8 @@ void Instruction__MFHI::execute_specific(Core & core,
 string Instruction__MFHI::get_tooltip() const {
     return "MFHI a -> a = HI";
 }
+template<> const string B__Instruction__MFHI::str = "MFHI";
 
-Instruction__MFLO::Instruction__MFLO()
-    : InstructionRDescriptor("MFLO", 0x12) {
-}
 void Instruction__MFLO::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -80,10 +68,8 @@ void Instruction__MFLO::execute_specific(Core & core,
 string Instruction__MFLO::get_tooltip() const {
     return "MFLO a -> a = LO";
 }
+template<> const string B__Instruction__MFLO::str = "MFLO";
 
-Instruction__MULT::Instruction__MULT()
-    : InstructionRDescriptor("MULT", 0x18) {
-}
 void Instruction__MULT::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -96,10 +82,8 @@ void Instruction__MULT::execute_specific(Core & core,
 string Instruction__MULT::get_tooltip() const {
     return "MULT a b -> LO = ((a * b) << 32) >> 32, HI = (a * b) >> 32";
 }
+template<> const string B__Instruction__MULT::str = "MULT";
 
-Instruction__NOR::Instruction__NOR()
-    : InstructionRDescriptor("NOR", 0x27) {
-}
 void Instruction__NOR::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -109,10 +93,8 @@ void Instruction__NOR::execute_specific(Core & core,
 string Instruction__NOR::get_tooltip() const {
     return "NOR a b c -> a = ~(b | c)";
 }
+template<> const string B__Instruction__NOR::str = "NOR";
 
-Instruction__XOR::Instruction__XOR()
-    : InstructionRDescriptor("XOR", 0x26) {
-}
 void Instruction__XOR::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -122,10 +104,8 @@ void Instruction__XOR::execute_specific(Core & core,
 string Instruction__XOR::get_tooltip() const {
     return "XOR a b c -> a = b ^ c";
 }
+template<> const string B__Instruction__XOR::str = "XOR";
 
-Instruction__OR::Instruction__OR()
-    : InstructionRDescriptor("OR", 0x25) {
-}
 void Instruction__OR::execute_specific(Core & core,
                                        std::vector<Instruction> & memory,
                                        uint32_t & rs, uint32_t & rt,
@@ -135,10 +115,8 @@ void Instruction__OR::execute_specific(Core & core,
 string Instruction__OR::get_tooltip() const {
     return "OR a b c -> a = b | c";
 }
+template<> const string B__Instruction__OR::str = "OR";
 
-Instruction__SLT::Instruction__SLT()
-    : InstructionRDescriptor("SLT", 0x2A) {
-}
 void Instruction__SLT::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -148,10 +126,8 @@ void Instruction__SLT::execute_specific(Core & core,
 string Instruction__SLT::get_tooltip() const {
     return "SLT a b c -> a = b < c";
 }
+template<> const string B__Instruction__SLT::str = "SLT";
 
-Instruction__SLL::Instruction__SLL()
-    : InstructionRDescriptor("SLL", 0x00) {
-}
 void Instruction__SLL::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -161,10 +137,8 @@ void Instruction__SLL::execute_specific(Core & core,
 string Instruction__SLL::get_tooltip() const {
     return "SLL a b c -> a = b << c";
 }
+template<> const string B__Instruction__SLL::str = "SLL";
 
-Instruction__SRL::Instruction__SRL()
-    : InstructionRDescriptor("SRL", 0x02) {
-}
 void Instruction__SRL::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -174,10 +148,8 @@ void Instruction__SRL::execute_specific(Core & core,
 string Instruction__SRL::get_tooltip() const {
     return "SRL a b c -> a = b >> c";
 }
+template<> const string B__Instruction__SRL::str = "SRL";
 
-Instruction__SUB::Instruction__SUB()
-    : InstructionRDescriptor("SUB", 0x22) {
-}
 void Instruction__SUB::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -187,10 +159,8 @@ void Instruction__SUB::execute_specific(Core & core,
 string Instruction__SUB::get_tooltip() const {
     return "SUB a b c -> a = b - c";
 }
+template<> const string B__Instruction__SUB::str = "SUB";
 
-Instruction__ADDI::Instruction__ADDI()
-    : InstructionIDescriptor("ADDI", 0x08) {
-}
 void Instruction__ADDI::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -200,10 +170,8 @@ void Instruction__ADDI::execute_specific(Core & core,
 string Instruction__ADDI::get_tooltip() const {
     return "ADDI a b c -> a = b + c";
 }
+template<> const string B__Instruction__ADDI::str = "ADDI";
 
-Instruction__ANDI::Instruction__ANDI()
-    : InstructionIDescriptor("ANDI", 0x0C) {
-}
 void Instruction__ANDI::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -213,10 +181,8 @@ void Instruction__ANDI::execute_specific(Core & core,
 string Instruction__ANDI::get_tooltip() const {
     return "ANDI a b c -> a = b & c";
 }
+template<> const string B__Instruction__ANDI::str = "ANDI";
 
-Instruction__BEQ::Instruction__BEQ()
-    : InstructionIDescriptor("BEQ", 0x04) {
-}
 void Instruction__BEQ::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -227,10 +193,8 @@ void Instruction__BEQ::execute_specific(Core & core,
 string Instruction__BEQ::get_tooltip() const {
     return "BEQ a b c -> if (a == b) then IP = c";
 }
+template<> const string B__Instruction__BEQ::str = "BEQ";
 
-Instruction__BNE::Instruction__BNE()
-    : InstructionIDescriptor("BNE", 0x05) {
-}
 void Instruction__BNE::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -241,10 +205,8 @@ void Instruction__BNE::execute_specific(Core & core,
 string Instruction__BNE::get_tooltip() const {
     return "BNE a b c -> if (a != b) then IP = c";
 }
+template<> const string B__Instruction__BNE::str = "BNE";
 
-Instruction__LW::Instruction__LW()
-    : InstructionIDescriptor("LW", 0x23) {
-}
 void Instruction__LW::execute_specific(Core & core,
                                        std::vector<Instruction> & memory,
                                        uint32_t & rs, uint32_t & rt,
@@ -254,10 +216,8 @@ void Instruction__LW::execute_specific(Core & core,
 string Instruction__LW::get_tooltip() const {
     return "LW a b c -> a = memory[b + c]";
 }
+template<> const string B__Instruction__LW::str = "LW";
 
-Instruction__LUI::Instruction__LUI()
-    : InstructionIDescriptor("LUI", 0x0F) {
-}
 void Instruction__LUI::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -267,10 +227,8 @@ void Instruction__LUI::execute_specific(Core & core,
 string Instruction__LUI::get_tooltip() const {
     return "LUI a b -> a = b << 16";
 }
+template<> const string B__Instruction__LUI::str = "LUI";
 
-Instruction__ORI::Instruction__ORI()
-    : InstructionIDescriptor("ORI", 0x0D) {
-}
 void Instruction__ORI::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t & rs, uint32_t & rt,
@@ -280,10 +238,8 @@ void Instruction__ORI::execute_specific(Core & core,
 string Instruction__ORI::get_tooltip() const {
     return "ORI a b c -> a = b | c";
 }
+template<> const string B__Instruction__ORI::str = "ORI";
 
-Instruction__SLTI::Instruction__SLTI()
-    : InstructionIDescriptor("SLTI", 0x0A) {
-}
 void Instruction__SLTI::execute_specific(Core & core,
                                          std::vector<Instruction> & memory,
                                          uint32_t & rs, uint32_t & rt,
@@ -293,10 +249,8 @@ void Instruction__SLTI::execute_specific(Core & core,
 string Instruction__SLTI::get_tooltip() const {
     return "SLTI a b c -> a = b < c";
 }
+template<> const string B__Instruction__SLTI::str = "SLTI";
 
-Instruction__SW::Instruction__SW()
-    : InstructionIDescriptor("SW", 0x2B) {
-}
 void Instruction__SW::execute_specific(Core & core,
                                        std::vector<Instruction> & memory,
                                        uint32_t & rs, uint32_t & rt,
@@ -306,10 +260,8 @@ void Instruction__SW::execute_specific(Core & core,
 string Instruction__SW::get_tooltip() const {
     return "SW a b c -> memory[b + c] = a";
 }
+template<> const string B__Instruction__SW::str = "SW";
 
-Instruction__J::Instruction__J()
-    : InstructionJDescriptor("J", 0x02) {
-}
 void Instruction__J::execute_specific(Core & core,
                                       std::vector<Instruction> & memory,
                                       uint32_t address) const {
@@ -318,10 +270,8 @@ void Instruction__J::execute_specific(Core & core,
 string Instruction__J::get_tooltip() const {
     return "J a -> IP = a";
 }
+template<> const string B__Instruction__J::str = "J";
 
-Instruction__JAL::Instruction__JAL()
-    : InstructionJDescriptor("JAL", 0x03) {
-}
 void Instruction__JAL::execute_specific(Core & core,
                                         std::vector<Instruction> & memory,
                                         uint32_t address) const {
@@ -331,3 +281,4 @@ void Instruction__JAL::execute_specific(Core & core,
 string Instruction__JAL::get_tooltip() const {
     return "JAL a -> SP = IP + 1, IP = a";
 }
+template<> const string B__Instruction__JAL::str = "JAL";

@@ -42,4 +42,3 @@ struct Instruction {
 };
 
 enum class OpType { R, I, J };
-OpType get_op_type(uint32_t operation);

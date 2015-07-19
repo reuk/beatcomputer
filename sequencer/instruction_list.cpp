@@ -16,6 +16,17 @@ InstructionList::InstructionList(const InstructionManager & im) {
     build_execution_tables(im);
 }
 
+OpType InstructionList::get_op_type(Instruction instr) const {
+    if (instr.r.op == 0x00)
+        return OpType::R;
+
+    auto i = execution_op_table.find(instr.r.op);
+    if (i != execution_op_table.end())
+        return i->second->get_op_type();
+
+    throw runtime_error("no such opcode");
+}
+
 Instruction InstructionList::assemble(string & str) const {
     trim(str);
     transform(begin(str), end(str), begin(str),
@@ -35,11 +46,10 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
     Instruction instr) const {
     auto type = get_op_type(instr.r.op);
 
-    //  TODO could replace with nested maps
     switch (type) {
         case OpType::R: {
-            auto i = execution_r_table.find(instr.r.funct);
-            if (i == execution_r_table.end()) {
+            auto i = execution_fu_table.find(instr.r.funct);
+            if (i == execution_fu_table.end()) {
                 stringstream ss;
                 ss << "no such function code: " << instr.r.funct << endl;
                 ss << "full instruction: " << instr.raw << " ("
@@ -49,21 +59,10 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
             return i->second;
         }
 
-        case OpType::I: {
-            auto i = execution_i_table.find(instr.i.op);
-            if (i == execution_i_table.end()) {
-                stringstream ss;
-                ss << "no such op code: " << instr.i.op << endl;
-                ss << "full instruction: " << instr.raw << " ("
-                   << bitset<32>(instr.raw) << ")" << endl;
-                throw runtime_error(ss.str());
-            }
-            return i->second;
-        }
-
+        case OpType::I:
         case OpType::J: {
-            auto i = execution_j_table.find(instr.j.op);
-            if (i == execution_j_table.end()) {
+            auto i = execution_op_table.find(instr.j.op);
+            if (i == execution_op_table.end()) {
                 stringstream ss;
                 ss << "no such op code: " << instr.j.op;
                 ss << "full instruction: " << instr.raw << " ("
@@ -92,19 +91,15 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
 }
 
 void InstructionList::build_assembly_table(const InstructionManager & im) {
-    for (auto i : im.r_instructions)
+    for (auto i : im.op_instructions)
         assembly_table[i->get_string()] = i;
-    for (auto i : im.i_instructions)
-        assembly_table[i->get_string()] = i;
-    for (auto i : im.j_instructions)
+    for (auto i : im.fu_instructions)
         assembly_table[i->get_string()] = i;
 }
 
 void InstructionList::build_execution_tables(const InstructionManager & im) {
-    for (auto i : im.r_instructions)
-        execution_r_table[i->get_id_code()] = i;
-    for (auto i : im.i_instructions)
-        execution_i_table[i->get_id_code()] = i;
-    for (auto i : im.j_instructions)
-        execution_j_table[i->get_id_code()] = i;
+    for (auto i : im.op_instructions)
+        execution_op_table[i->get_id_code()] = i;
+    for (auto i : im.fu_instructions)
+        execution_fu_table[i->get_id_code()] = i;
 }

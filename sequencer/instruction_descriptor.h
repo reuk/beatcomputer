@@ -11,43 +11,29 @@
 
 class InstructionDescriptor {
 public:
-    InstructionDescriptor(const std::string & str, uint32_t id);
-
     virtual Instruction assemble(
         const std::vector<std::string> & str) const = 0;
     virtual std::string disassemble(Instruction instr) const = 0;
     virtual void execute(Core & core, std::vector<Instruction> & memory,
                          Instruction instr) const = 0;
 
-    std::string get_string() const;
-    uint32_t get_id_code() const;
+    virtual std::string get_string() const = 0;
+    virtual uint32_t get_id_code() const = 0;
+    virtual OpType get_op_type() const = 0;
 
     virtual std::string get_tooltip() const = 0;
-
-    void set_string(const std::string & str);
-    void set_id_code(uint32_t id);
-
-private:
-    std::string str;
-    uint32_t id;
 };
 
-template <typename T>
+template <typename T, int id>
 class SpecificInstructionDescriptor : public InstructionDescriptor {
 public:
-    SpecificInstructionDescriptor(const std::string & str, uint32_t id)
-        : InstructionDescriptor(str, id) {
-    }
+    uint32_t get_id_code() const override {return id;}
 };
 
-template <>
-class SpecificInstructionDescriptor<InstructionR>
-    : public InstructionDescriptor {
+template <int id>
+class RInstructionDescriptor
+    : public SpecificInstructionDescriptor<InstructionR, id> {
 public:
-    SpecificInstructionDescriptor(const std::string & str, uint32_t id)
-        : InstructionDescriptor(str, id) {
-    }
-
     Instruction assemble(const std::vector<std::string> & str) const override {
         return assemble_specific(str);
     }
@@ -73,7 +59,7 @@ public:
         const std::vector<std::string> & str) const {
         InstructionR r;
         r.op = 0x0;
-        r.funct = get_id_code();
+        r.funct = SpecificInstructionDescriptor<InstructionR, id>::get_id_code();
         r.rd = parse_register(str[1]);
         r.rs = parse_register(str[2]);
         r.rt = parse_register(str[3]);
@@ -89,16 +75,17 @@ public:
 
         return ss.str();
     }
+
+    OpType get_op_type() const override {return OpType::R;}
+    std::string get_string() const override {return str;}
+private:
+    static const std::string str;
 };
 
-template <>
-class SpecificInstructionDescriptor<InstructionI>
-    : public InstructionDescriptor {
+template <int id>
+class IInstructionDescriptor
+    : public SpecificInstructionDescriptor<InstructionI, id> {
 public:
-    SpecificInstructionDescriptor(const std::string & str, uint32_t id)
-        : InstructionDescriptor(str, id) {
-    }
-
     Instruction assemble(const std::vector<std::string> & str) const override {
         return assemble_specific(str);
     }
@@ -122,7 +109,7 @@ public:
     virtual InstructionI assemble_specific(
         const std::vector<std::string> & str) const {
         InstructionI r;
-        r.op = get_id_code();
+        r.op = SpecificInstructionDescriptor<InstructionI, id>::get_id_code();
         r.rt = parse_register(str[1]);
         r.rs = parse_register(str[2]);
         r.immediate = parse_immediate(str[3]);
@@ -137,16 +124,17 @@ public:
 
         return ss.str();
     }
+
+    OpType get_op_type() const override {return OpType::I;}
+    std::string get_string() const override {return str;}
+private:
+    static const std::string str;
 };
 
-template <>
-class SpecificInstructionDescriptor<InstructionJ>
-    : public InstructionDescriptor {
+template <int id>
+class JInstructionDescriptor
+    : public SpecificInstructionDescriptor<InstructionJ, id>{
 public:
-    SpecificInstructionDescriptor(const std::string & str, uint32_t id)
-        : InstructionDescriptor(str, id) {
-    }
-
     Instruction assemble(const std::vector<std::string> & str) const override {
         return assemble_specific(str);
     }
@@ -167,7 +155,7 @@ public:
     virtual InstructionJ assemble_specific(
         const std::vector<std::string> & str) const {
         InstructionJ r;
-        r.op = get_id_code();
+        r.op = SpecificInstructionDescriptor<InstructionJ, id>::get_id_code();
         r.address = parse_address(str[1]);
         return r;
     }
@@ -179,8 +167,9 @@ public:
 
         return ss.str();
     }
-};
 
-using InstructionRDescriptor = SpecificInstructionDescriptor<InstructionR>;
-using InstructionIDescriptor = SpecificInstructionDescriptor<InstructionI>;
-using InstructionJDescriptor = SpecificInstructionDescriptor<InstructionJ>;
+    OpType get_op_type() const override {return OpType::J;}
+    std::string get_string() const override {return str;}
+private:
+    static const std::string str;
+};

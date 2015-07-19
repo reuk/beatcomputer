@@ -9,7 +9,6 @@ class InstructionManager {
 public:
     InstructionManager();
 
-    std::vector<std::shared_ptr<InstructionRDescriptor>> r_instructions;
-    std::vector<std::shared_ptr<InstructionIDescriptor>> i_instructions;
-    std::vector<std::shared_ptr<InstructionJDescriptor>> j_instructions;
+    std::vector<std::shared_ptr<InstructionDescriptor>> fu_instructions;
+    std::vector<std::shared_ptr<InstructionDescriptor>> op_instructions;
 };
