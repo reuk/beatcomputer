@@ -7,23 +7,20 @@
         void execute_specific(Core & core, std::vector<Instruction> & memory,  \
                               uint32_t & rs, uint32_t & rt, uint32_t & rd,     \
                               uint32_t shamt) const override;                  \
-    };                                                                         \
-    template<> const std::string RInstructionDescriptor<Id>::str = String;
+    };
 
 #define I_INSTRUCTION_DEFINITION(Name, String, Id)                             \
     struct Name: IInstructionDescriptor<Id> {                                  \
         void execute_specific(Core & core, std::vector<Instruction> & memory,  \
                               uint32_t & rs, uint32_t & rt,                    \
                               uint32_t immediate) const override;              \
-    };                                                                         \
-    template<> const std::string IInstructionDescriptor<Id>::str = String;
+    };
 
 #define J_INSTRUCTION_DEFINITION(Name, String, Id)                             \
     struct Name: JInstructionDescriptor<Id> {                                  \
     void execute_specific(Core & core, std::vector<Instruction> & memory,      \
                           uint32_t address) const override;                    \
-    };                                                                         \
-    template<> const std::string JInstructionDescriptor<Id>::str = String;
+    };
 
 R_INSTRUCTION_DEFINITION(NOP    , "NOP"   , 0x00);
 

@@ -1,6 +1,6 @@
 #include "instruction_list.h"
 
-#include "instruction_structs.h"
+#include "instruction_set.h"
 
 #include <istream>
 #include <sstream>

@@ -1,6 +1,6 @@
 #include "instruction_manager.h"
 
-#include "instruction_structs.h"
+#include "instruction_set.h"
 
 #include <memory>
 
@@ -8,20 +8,50 @@ using namespace std;
 
 InstructionManager::InstructionManager()
     : fu_instructions({
-          make_shared<Instruction__ADD>(), make_shared<Instruction__AND>(),
-          make_shared<Instruction__DIV>(), make_shared<Instruction__JR>(),
-          make_shared<Instruction__MFHI>(), make_shared<Instruction__MFLO>(),
-          make_shared<Instruction__MULT>(), make_shared<Instruction__NOR>(),
-          make_shared<Instruction__XOR>(), make_shared<Instruction__OR>(),
-          make_shared<Instruction__SLT>(), make_shared<Instruction__SLL>(),
-          make_shared<Instruction__SRL>(), make_shared<Instruction__SUB>(),
+        make_shared<NOP    >(),
+        make_shared<ADD_R  >(),
+        make_shared<SUB_R  >(),
+        make_shared<MUL_R  >(),
+        make_shared<DIV_R  >(),
+        make_shared<BAND_R >(),
+        make_shared<BOR_R  >(),
+        make_shared<BNOT_R >(),
+        make_shared<BNOR_R >(),
+        make_shared<BNAND_R>(),
+        make_shared<BXOR_R >(),
+        make_shared<AND_R  >(),
+        make_shared<OR_R   >(),
+        make_shared<NOT_R  >(),
+        make_shared<MOVE_R >(),
+        make_shared<OSC_R  >(),
+        make_shared<RND    >(),
       })
     , op_instructions({
-          make_shared<Instruction__ADDI>(), make_shared<Instruction__ANDI>(),
-          make_shared<Instruction__BEQ>(), make_shared<Instruction__BNE>(),
-          make_shared<Instruction__LW>(), make_shared<Instruction__LUI>(),
-          make_shared<Instruction__ORI>(), make_shared<Instruction__SLTI>(),
-          make_shared<Instruction__SW>(), make_shared<Instruction__J>(),
-          make_shared<Instruction__JAL>(),
+        make_shared<ADD_I  >(),
+        make_shared<SUB_I  >(),
+        make_shared<MUL_I  >(),
+        make_shared<DIV_I  >(),
+        make_shared<BAND_I >(),
+        make_shared<BOR_I  >(),
+        make_shared<BNOT_I >(),
+        make_shared<BNOR_I >(),
+        make_shared<BNAND_I>(),
+        make_shared<BXOR_I >(),
+        make_shared<AND_I  >(),
+        make_shared<OR_I   >(),
+        make_shared<NOT_I  >(),
+        make_shared<MOVE_I >(),
+        make_shared<OSC_I  >(),
+        make_shared<LOAD   >(),
+        make_shared<SAVE   >(),
+        make_shared<JUMP   >(),
+        make_shared<JE     >(),
+        make_shared<JNE    >(),
+        make_shared<JL     >(),
+        make_shared<JLE    >(),
+        make_shared<JG     >(),
+        make_shared<JGE    >(),
       }) {
 }
+
+
