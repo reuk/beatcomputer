@@ -12,7 +12,6 @@ Todo
   constants
     * shouldn't have to specify immediate mode, it should be deduced
 * simplify instruction set
-* add float support
 * write special parse functions where they're needed
 
 * unit tests!
@@ -20,8 +19,6 @@ Todo
         * they might do just unsigned math whereas I want just signed probably
 
 * enable/disable tooltip mode
-
-* labels (symbol table)
 
 * add syscall or special register for note output
 * add ability for playing notes through midi/os
@@ -54,3 +51,5 @@ Maybe
 * limit number of usable registers
 * overflow trap
 * comments - end of line only
+* add float support
+* labels (symbol table)

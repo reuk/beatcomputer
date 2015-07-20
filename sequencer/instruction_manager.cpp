@@ -21,7 +21,7 @@ InstructionManager::InstructionManager()
           make_shared<Instruction__BEQ>(), make_shared<Instruction__BNE>(),
           make_shared<Instruction__LW>(), make_shared<Instruction__LUI>(),
           make_shared<Instruction__ORI>(), make_shared<Instruction__SLTI>(),
-          make_shared<Instruction__SW>(),
-          make_shared<Instruction__J>(), make_shared<Instruction__JAL>(),
+          make_shared<Instruction__SW>(), make_shared<Instruction__J>(),
+          make_shared<Instruction__JAL>(),
       }) {
 }

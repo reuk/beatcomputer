@@ -5,8 +5,11 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wall -std=c++1y")
 include_directories(/usr/local/include/oscpack)
 
 set(name beatcomputer)
-file(GLOB sources "*.cpp")
+file(GLOB lib_sources "*.cpp")
+
+add_library(${name}_common ${lib_sources})
 
 set(libraries ncurses oscpack)
-add_executable(${name} ${sources})
-target_link_libraries(${name} ${libraries})
+add_executable(${name} main.cpp)
+
+target_link_libraries(${name} ${name}_common ${libraries})

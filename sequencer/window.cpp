@@ -28,6 +28,9 @@ int Window::move(int v, int h) const {
 int Window::print(int v, int h, const string &s) const {
     return mvwaddstr(window.get(), v, h, s.c_str());
 }
+int Window::resize(int v, int h) const {
+    return wresize(window.get(), v, h);
+}
 
 int Window::w_attron(int attr) const {
     return wattron(window.get(), attr);

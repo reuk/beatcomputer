@@ -48,9 +48,8 @@ public:
 
 class MachineCodeWindow : public BoxedWindow {
 public:
-    MachineCodeWindow(WINDOW *parent, int height, int width, int starty,
-                      int startx)
-        : BoxedWindow(parent, height, width, starty, startx) {
+    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
+        : BoxedWindow(parent, height, get_width(), starty, startx) {
     }
 
     void draw_contents(const InstructionList &il, Core &core,
@@ -68,24 +67,16 @@ public:
             line += 1;
         }
     }
-};
 
-class LabelWindow : public BoxedWindow {
-public:
-    LabelWindow(WINDOW *parent, int height, int width, int starty, int startx)
-        : BoxedWindow(parent, height, width, starty, startx) {
-    }
-
-    void draw_contents(const InstructionList &il, Core &core,
-                       vector<Instruction> &memory) const override {
+    static int get_width() {
+        return 10;
     }
 };
 
 class MnemonicWindow : public BoxedWindow {
 public:
-    MnemonicWindow(WINDOW *parent, int height, int width, int starty,
-                   int startx)
-        : BoxedWindow(parent, height, width, starty, startx) {
+    MnemonicWindow(WINDOW *parent, int height, int starty, int startx)
+        : BoxedWindow(parent, height, get_width(), starty, startx) {
     }
 
     void draw_contents(const InstructionList &il, Core &core,
@@ -103,12 +94,16 @@ public:
             line += 1;
         }
     }
+
+    static int get_width() {
+        return 32;
+    }
 };
 
 class TooltipWindow : public BoxedWindow {
 public:
-    TooltipWindow(WINDOW *parent, int height, int width, int starty, int startx)
-        : BoxedWindow(parent, height, width, starty, startx) {
+    TooltipWindow(WINDOW *parent, int height, int starty, int startx)
+        : BoxedWindow(parent, height, get_width(), starty, startx) {
     }
 
     void draw_contents(const InstructionList &il, Core &core,
@@ -126,13 +121,16 @@ public:
             line += 1;
         }
     }
+
+    static int get_width() {
+        return 32;
+    }
 };
 
 class CoreCoreWindow : public BoxedWindow {
 public:
-    CoreCoreWindow(WINDOW *parent, int height, int width, int starty,
-                   int startx)
-        : BoxedWindow(parent, height, width, starty, startx) {
+    CoreCoreWindow(WINDOW *parent, int height, int starty, int startx)
+        : BoxedWindow(parent, height, get_width(), starty, startx) {
     }
 
     void draw_contents(const InstructionList &il, Core &core,
@@ -159,6 +157,10 @@ public:
         print_register("SP", core.sp);
         print_register("IP", core.ip);
     }
+
+    static int get_width() {
+        return 2 + 5 + 8;
+    }
 };
 
 class CoreWindow : public Window {
@@ -166,27 +168,18 @@ public:
     CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
         : Window(parent, HEIGHT,
-                 WIDTH_MACHINE_CODE + WIDTH_LABEL + WIDTH_MNEMONIC +
-                     WIDTH_TOOLTIP + WIDTH_CORE,
+                 MachineCodeWindow::get_width() + MnemonicWindow::get_width() +
+                     TooltipWindow::get_width() + CoreCoreWindow::get_width(),
                  starty, startx)
         , il(il)
-        , window_machine_code(*this, 0, WIDTH_MACHINE_CODE, 0, 0)
-        , window_label(*this, 0, WIDTH_LABEL, 0, WIDTH_MACHINE_CODE)
-        , window_mnemonic(*this, 0, WIDTH_MNEMONIC, 0,
-                          WIDTH_MACHINE_CODE + WIDTH_LABEL)
-        , window_tooltip(*this, 0, WIDTH_TOOLTIP, 0,
-                         WIDTH_MACHINE_CODE + WIDTH_LABEL + WIDTH_MNEMONIC)
-        , window_core(
-              *this, 0, WIDTH_CORE, 0,
-              WIDTH_MACHINE_CODE + WIDTH_LABEL + WIDTH_MNEMONIC + WIDTH_TOOLTIP)
+        , window_machine_code(*this, 0, 0, 0)
+        , window_mnemonic(*this, 0, 0, MachineCodeWindow::get_width())
+        , window_tooltip(*this, 0, 0, MachineCodeWindow::get_width() +
+                                          MnemonicWindow::get_width())
+        , window_core(*this, 0, 0, MachineCodeWindow::get_width() +
+                                       MnemonicWindow::get_width() +
+                                       TooltipWindow::get_width())
         , memory(MEMORY_LOCATIONS) {
-        box(0, 0);
-
-        window_machine_code.box(0, 0);
-        window_label.box(0, 0);
-        window_mnemonic.box(0, 0);
-        window_tooltip.box(0, 0);
-        window_core.box(0, 0);
     }
 
     void set_memory(const vector<Instruction> &m) {
@@ -195,9 +188,9 @@ public:
     }
 
     void draw() {
-        for (auto i : vector<BoxedWindow *>{&window_machine_code, &window_label,
-                                            &window_mnemonic, &window_tooltip,
-                                            &window_core}) {
+        for (auto i :
+             vector<BoxedWindow *>{&window_machine_code, &window_mnemonic,
+                                   &window_tooltip, &window_core}) {
             i->draw(il, core, memory);
         }
     }
@@ -213,19 +206,11 @@ private:
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
 
-    static const int WIDTH_MACHINE_CODE = 2 + 8;
-    static const int WIDTH_LABEL = 2 + 10;
-    static const int WIDTH_MNEMONIC = 2 + 20;
-    static const int WIDTH_TOOLTIP = 2 + 30;
-    static const int WIDTH_CORE = 2 + 5 + 8;
-
     MachineCodeWindow window_machine_code;
-    LabelWindow window_label;
     MnemonicWindow window_mnemonic;
     TooltipWindow window_tooltip;
     CoreCoreWindow window_core;
 
-public:
     Core core;
     vector<Instruction> memory;
 };

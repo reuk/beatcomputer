@@ -27,6 +27,7 @@ public:
     virtual int box(int v, int h) const;
     virtual int move(int v, int h) const;
     virtual int print(int v, int h, const std::string &s) const;
+    virtual int resize(int v, int h) const;
 
     virtual int w_attron(int attr) const;
     virtual int w_attroff(int attr) const;

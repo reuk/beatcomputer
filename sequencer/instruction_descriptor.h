@@ -21,13 +21,15 @@ public:
     virtual uint32_t get_id_code() const = 0;
     virtual OpType get_op_type() const = 0;
 
-    virtual std::string get_tooltip() const = 0;
+    virtual std::string get_tooltip() const {return "";}
 };
 
 template <typename T, int id>
 class SpecificInstructionDescriptor : public InstructionDescriptor {
 public:
-    uint32_t get_id_code() const override {return id;}
+    uint32_t get_id_code() const override {
+        return id;
+    }
 };
 
 template <int id>
@@ -59,7 +61,8 @@ public:
         const std::vector<std::string> & str) const {
         InstructionR r;
         r.op = 0x0;
-        r.funct = SpecificInstructionDescriptor<InstructionR, id>::get_id_code();
+        r.funct =
+            SpecificInstructionDescriptor<InstructionR, id>::get_id_code();
         r.rd = parse_register(str[1]);
         r.rs = parse_register(str[2]);
         r.rt = parse_register(str[3]);
@@ -76,8 +79,13 @@ public:
         return ss.str();
     }
 
-    OpType get_op_type() const override {return OpType::R;}
-    std::string get_string() const override {return str;}
+    OpType get_op_type() const override {
+        return OpType::R;
+    }
+    std::string get_string() const override {
+        return str;
+    }
+
 private:
     static const std::string str;
 };
@@ -125,15 +133,20 @@ public:
         return ss.str();
     }
 
-    OpType get_op_type() const override {return OpType::I;}
-    std::string get_string() const override {return str;}
+    OpType get_op_type() const override {
+        return OpType::I;
+    }
+    std::string get_string() const override {
+        return str;
+    }
+
 private:
     static const std::string str;
 };
 
 template <int id>
 class JInstructionDescriptor
-    : public SpecificInstructionDescriptor<InstructionJ, id>{
+    : public SpecificInstructionDescriptor<InstructionJ, id> {
 public:
     Instruction assemble(const std::vector<std::string> & str) const override {
         return assemble_specific(str);
@@ -168,8 +181,13 @@ public:
         return ss.str();
     }
 
-    OpType get_op_type() const override {return OpType::J;}
-    std::string get_string() const override {return str;}
+    OpType get_op_type() const override {
+        return OpType::J;
+    }
+    std::string get_string() const override {
+        return str;
+    }
+
 private:
     static const std::string str;
 };
