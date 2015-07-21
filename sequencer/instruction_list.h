@@ -21,23 +21,21 @@ public:
 
 private:
     std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>
-        build_assembly_table(const InstructionManager & im) const;
-    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
-        build_op_table(const InstructionManager & im) const;
-    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
-        build_fu_table(const InstructionManager & im) const;
+    build_assembly_table(const InstructionManager & im) const;
+    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>> build_op_table(
+        const InstructionManager & im) const;
+    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>> build_fu_table(
+        const InstructionManager & im) const;
 
     std::shared_ptr<InstructionDescriptor> descriptor_for_instruction(
         Instruction r) const;
 
-    const
-    std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>
+    const std::map<std::string,
+                   std::vector<std::shared_ptr<InstructionDescriptor>>>
         assembly_table;
 
-    const
-    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
+    const std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
         execution_op_table;
-    const
-    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
+    const std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
         execution_fu_table;
 };

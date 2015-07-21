@@ -2,6 +2,7 @@
 #include "trim.h"
 #include "instruction_list.h"
 #include "window.h"
+#include "logger.h"
 
 #include <ncurses.h>
 
@@ -246,6 +247,8 @@ protected:
 
 int main(int argc, char **argv) {
     try {
+        Logger::restart();
+
         initscr();
 
         if (!has_colors()) {

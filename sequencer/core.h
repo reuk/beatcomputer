@@ -16,8 +16,8 @@ public:
     uint32_t lo;
     uint32_t hi;
 
-    uint32_t sp;    //  stack pointer
-    uint32_t ip;    //  instruction pointer
+    uint32_t sp;  //  stack pointer
+    uint32_t ip;  //  instruction pointer
 
-    bool operator== (const Core & rhs) const;
+    bool operator==(const Core & rhs) const;
 };

@@ -1,6 +1,7 @@
 #include "instruction_list.h"
 
 #include "instruction_set.h"
+#include "logger.h"
 
 #include <istream>
 #include <sstream>
@@ -44,9 +45,10 @@ Instruction InstructionList::assemble(string & str) const {
     for (auto j : i->second) {
         try {
             return j->assemble(tokens);
-        } catch (const runtime_error & re) {}
+        } catch (const runtime_error & re) {
+        }
     }
-    throw runtime_error("unable to assemble instruction");
+    throw runtime_error("unable to assemble instruction: " + tokens.front());
 }
 
 shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
@@ -99,7 +101,8 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
 
 std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>
 InstructionList::build_assembly_table(const InstructionManager & im) const {
-    std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>> ret;
+    std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>
+        ret;
 
     auto insert = [&ret](auto i) {
         auto j = ret.find(i->get_string());

@@ -8,6 +8,7 @@ set(name beatcomputer)
 file(GLOB lib_sources "*.cpp")
 
 add_library(${name}_common ${lib_sources})
+target_link_libraries(${name}_common oscpack)
 
 set(libraries ncurses oscpack)
 add_executable(${name} main.cpp)

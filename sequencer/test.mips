@@ -7,4 +7,5 @@ ADD     r10 r10 0x1
 LOAD    r11 r10 0
 ADD     r11 r11 0x1000
 SAVE    r11 r12 0x1
+OSC     r12 r11 r10
 JUMP    0

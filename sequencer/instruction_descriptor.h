@@ -21,7 +21,9 @@ public:
     virtual uint32_t get_id_code() const = 0;
     virtual OpType get_op_type() const = 0;
 
-    virtual std::string get_tooltip() const {return "";}
+    virtual std::string get_tooltip() const {
+        return "";
+    }
 };
 
 template <typename T, int id>

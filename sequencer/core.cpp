@@ -32,6 +32,6 @@ void Core::print_state() const {
     pr32("IP", ip);
 }
 
-bool Core::operator== (const Core & rhs) const {
-    return ! memcmp(this, &rhs, sizeof(Core));
+bool Core::operator==(const Core & rhs) const {
+    return !memcmp(this, &rhs, sizeof(Core));
 }
