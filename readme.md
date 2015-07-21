@@ -6,11 +6,8 @@ Todo
 
 * ncurses mode needs an editor
 
-* immediate-mode instructions should be generated for instructions that use
-  constants
-    * shouldn't have to specify immediate mode, it should be deduced
-* simplify instruction set
 * write special parse functions where they're needed
+* write special disassemble functions where they're needed
 
 * unit tests!
     * check that math instructions work properly
@@ -18,8 +15,7 @@ Todo
 
 * enable/disable tooltip mode
 
-* add syscall or special register for note output
-* add ability for playing notes through midi/os
+* change routing of OSC somehow
 
 Done
 ----
@@ -43,6 +39,13 @@ Done
 * hook up osc or midi support
 * tempo sync
 * random number generation
+* immediate-mode instructions should be generated for instructions that use
+  constants
+    * shouldn't have to specify immediate mode, it should be deduced
+* simplify instruction set
+* add syscall or special register for note output
+* add ability for playing notes through midi/os
+
 
 Maybe
 -----

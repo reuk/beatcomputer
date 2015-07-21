@@ -12,12 +12,10 @@ public:
 
     void print_state() const;
 
-    std::array<uint32_t, 32> reg;
-    uint32_t lo;
-    uint32_t hi;
+    std::array<int32_t, 32> reg;
 
-    uint32_t sp;  //  stack pointer
-    uint32_t ip;  //  instruction pointer
+    int32_t sp;  //  stack pointer
+    int32_t ip;  //  instruction pointer
 
     bool operator==(const Core & rhs) const;
 };

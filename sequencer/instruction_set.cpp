@@ -7,7 +7,7 @@ using namespace std;
 
 #define R_INSTRUCTION_IMPLEMENTATION(Name, String, Id, functionbody)      \
     void Name::execute_specific(Core &core, vector<Instruction> &memory,  \
-                                uint32_t &rs, uint32_t &rt, uint32_t &rd, \
+                                int32_t &rs, int32_t &rt, int32_t &rd,    \
                                 uint32_t shamt) const {                   \
         functionbody;                                                     \
     }                                                                     \
@@ -16,7 +16,7 @@ using namespace std;
 
 #define I_INSTRUCTION_IMPLEMENTATION(Name, String, Id, functionbody)     \
     void Name::execute_specific(Core &core, vector<Instruction> &memory, \
-                                uint32_t &rs, uint32_t &rt, uint32_t im) \
+                                int32_t &rs, int32_t &rt, int32_t im)    \
         const {                                                          \
         functionbody;                                                    \
     }                                                                    \
@@ -25,7 +25,7 @@ using namespace std;
 
 #define J_INSTRUCTION_IMPLEMENTATION(Name, String, Id, functionbody)     \
     void Name::execute_specific(Core &core, vector<Instruction> &memory, \
-                                uint32_t address) const {                \
+                                int32_t address) const {                 \
         functionbody;                                                    \
     }                                                                    \
     template <>                                                          \
@@ -78,4 +78,4 @@ R_INSTRUCTION_IMPLEMENTATION(MOVE_R, "MOVE", 0x0E, );
 I_INSTRUCTION_IMPLEMENTATION(MOVE_I, "MOVE", 0x0E, );
 I_INSTRUCTION_IMPLEMENTATION(LOAD, "LOAD", 0x10, rt = memory[rs + im].raw);
 I_INSTRUCTION_IMPLEMENTATION(SAVE, "SAVE", 0x11, memory[rs + im].raw = rt);
-R_INSTRUCTION_IMPLEMENTATION(RND, "RND", 0x18, );
+R_INSTRUCTION_IMPLEMENTATION(RND, "RND", 0x18, rd = rand());

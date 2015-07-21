@@ -48,15 +48,15 @@ public:
 
     void execute(Core & core, std::vector<Instruction> & memory,
                  Instruction instr) const override {
-        uint32_t & rs = core.reg[instr.r.rs];
-        uint32_t & rt = core.reg[instr.r.rt];
-        uint32_t & rd = core.reg[instr.r.rd];
+        int32_t & rs = core.reg[instr.r.rs];
+        int32_t & rt = core.reg[instr.r.rt];
+        int32_t & rd = core.reg[instr.r.rd];
         execute_specific(core, memory, rs, rt, rd, instr.r.shamt);
     }
 
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
-                                  uint32_t & rs, uint32_t & rt, uint32_t & rd,
+                                  int32_t & rs, int32_t & rt, int32_t & rd,
                                   uint32_t shamt) const = 0;
 
     virtual InstructionR assemble_specific(
@@ -106,15 +106,15 @@ public:
 
     void execute(Core & core, std::vector<Instruction> & memory,
                  Instruction instr) const override {
-        uint32_t & rs = core.reg[instr.i.rs];
-        uint32_t & rt = core.reg[instr.i.rt];
+        int32_t & rs = core.reg[instr.i.rs];
+        int32_t & rt = core.reg[instr.i.rt];
         execute_specific(core, memory, rs, rt, instr.i.immediate);
     }
 
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
-                                  uint32_t & rs, uint32_t & rt,
-                                  uint32_t immediate) const = 0;
+                                  int32_t & rs, int32_t & rt,
+                                  int32_t immediate) const = 0;
 
     virtual InstructionI assemble_specific(
         const std::vector<std::string> & str) const {
@@ -165,7 +165,7 @@ public:
 
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
-                                  uint32_t address) const = 0;
+                                  int32_t address) const = 0;
 
     virtual InstructionJ assemble_specific(
         const std::vector<std::string> & str) const {

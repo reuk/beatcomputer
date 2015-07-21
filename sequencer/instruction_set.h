@@ -5,21 +5,21 @@
 #define R_INSTRUCTION_DEFINITION(Name, String, Id)                            \
     struct Name : RInstructionDescriptor<Id> {                                \
         void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              uint32_t & rs, uint32_t & rt, uint32_t & rd,    \
+                              int32_t & rs, int32_t & rt, int32_t & rd,       \
                               uint32_t shamt) const override;                 \
     };
 
 #define I_INSTRUCTION_DEFINITION(Name, String, Id)                            \
     struct Name : IInstructionDescriptor<Id> {                                \
         void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              uint32_t & rs, uint32_t & rt,                   \
-                              uint32_t immediate) const override;             \
+                              int32_t & rs, int32_t & rt,                     \
+                              int32_t immediate) const override;              \
     };
 
 #define J_INSTRUCTION_DEFINITION(Name, String, Id)                            \
     struct Name : JInstructionDescriptor<Id> {                                \
         void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              uint32_t address) const override;               \
+                              int32_t address) const override;                \
     };
 
 #define BINARY_INSTRUCTION_DEFINITION(Name, String, Id) \
