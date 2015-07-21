@@ -11,9 +11,10 @@
 
 using namespace std;
 
-InstructionList::InstructionList(const InstructionManager & im) {
-    build_assembly_table(im);
-    build_execution_tables(im);
+InstructionList::InstructionList(const InstructionManager & im)
+    : assembly_table(build_assembly_table(im))
+    , execution_op_table(build_op_table(im))
+    , execution_fu_table(build_fu_table(im)) {
 }
 
 OpType InstructionList::get_op_type(Instruction instr) const {
@@ -37,9 +38,15 @@ Instruction InstructionList::assemble(string & str) const {
 
     auto i = assembly_table.find(tokens.front());
     if (i == assembly_table.end()) {
-        throw runtime_error("no such instruction");
+        throw runtime_error("no such instruction: " + tokens.front());
     }
-    return i->second->assemble(tokens);
+
+    for (auto j : i->second) {
+        try {
+            return j->assemble(tokens);
+        } catch (const runtime_error & re) {}
+    }
+    throw runtime_error("unable to assemble instruction");
 }
 
 shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
@@ -90,16 +97,39 @@ void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
         core.ip += 1;
 }
 
-void InstructionList::build_assembly_table(const InstructionManager & im) {
+std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>
+InstructionList::build_assembly_table(const InstructionManager & im) const {
+    std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>> ret;
+
+    auto insert = [&ret](auto i) {
+        auto j = ret.find(i->get_string());
+        if (j != ret.end()) {
+            j->second.push_back(i);
+        } else {
+            ret[i->get_string()] = {i};
+        }
+    };
+
     for (auto i : im.op_instructions)
-        assembly_table[i->get_string()] = i;
+        insert(i);
     for (auto i : im.fu_instructions)
-        assembly_table[i->get_string()] = i;
+        insert(i);
+
+    return ret;
 }
 
-void InstructionList::build_execution_tables(const InstructionManager & im) {
+std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
+InstructionList::build_op_table(const InstructionManager & im) const {
+    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>> ret;
     for (auto i : im.op_instructions)
-        execution_op_table[i->get_id_code()] = i;
+        ret[i->get_id_code()] = i;
+    return ret;
+}
+
+std::map<uint32_t, std::shared_ptr<InstructionDescriptor>>
+InstructionList::build_fu_table(const InstructionManager & im) const {
+    std::map<uint32_t, std::shared_ptr<InstructionDescriptor>> ret;
     for (auto i : im.fu_instructions)
-        execution_fu_table[i->get_id_code()] = i;
+        ret[i->get_id_code()] = i;
+    return ret;
 }

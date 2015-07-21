@@ -4,8 +4,6 @@ Assembly Live Coding Machine
 Todo
 ----
 
-* random number generation
-
 * ncurses mode needs an editor
 
 * immediate-mode instructions should be generated for instructions that use
@@ -44,6 +42,7 @@ Done
     * each core gets maybe 64 words of memory
 * hook up osc or midi support
 * tempo sync
+* random number generation
 
 Maybe
 -----

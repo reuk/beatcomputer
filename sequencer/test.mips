@@ -1,10 +1,10 @@
-ORI r1 r1 0x1
-ORI r2 r2 0x5
-ADD r3 r2 r1
-ADDI r4 r4 0x10
-ADDI r5 r4 0x20
-ADDI r10 r10 0x1
-LW r11 r10 0
-ADDI r11 r11 0x1000
-SW r11 r12 0x1
-J 0
+OR      r1 r1 0x1
+OR      r2 r2 0x5
+ADD     r3 r2 r1
+ADD     r4 r4 0x10
+ADD     r5 r4 0x20
+ADD     r10 r10 0x1
+LOAD    r11 r10 0
+ADD     r11 r11 0x1000
+SAVE    r11 r12 0x1
+JUMP    0

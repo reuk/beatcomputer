@@ -287,6 +287,7 @@ int main(int argc, char **argv) {
         s.RunUntilSigInt();
 
     } catch (const runtime_error &re) {
+        endwin();
         cout << re.what() << endl;
         return 1;
     }
