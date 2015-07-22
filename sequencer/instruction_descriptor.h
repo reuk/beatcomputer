@@ -57,10 +57,13 @@ public:
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
                                   int32_t & rs, int32_t & rt, int32_t & rd,
-                                  uint32_t shamt) const = 0;
+                                  uint32_t shamt) const {};
 
     virtual InstructionR assemble_specific(
         const std::vector<std::string> & str) const {
+        if (str.size() != 4) {
+            throw std::runtime_error("instruction takes three arguments");
+        }
         InstructionR r;
         r.op = 0x0;
         r.funct =
@@ -118,6 +121,9 @@ public:
 
     virtual InstructionI assemble_specific(
         const std::vector<std::string> & str) const {
+        if (str.size() != 4) {
+            throw std::runtime_error("instruction takes three arguments");
+        }
         InstructionI r;
         r.op = SpecificInstructionDescriptor<InstructionI, id>::get_id_code();
         r.rt = parse_register(str[1]);
@@ -169,6 +175,9 @@ public:
 
     virtual InstructionJ assemble_specific(
         const std::vector<std::string> & str) const {
+        if (str.size() != 2) {
+            throw std::runtime_error("instruction takes one argument");
+        }
         InstructionJ r;
         r.op = SpecificInstructionDescriptor<InstructionJ, id>::get_id_code();
         r.address = parse_address(str[1]);

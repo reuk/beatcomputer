@@ -6,9 +6,6 @@ Todo
 
 * ncurses mode needs an editor
 
-* write special parse functions where they're needed
-* write special disassemble functions where they're needed
-
 * unit tests!
     * check that math instructions work properly
         * they might do just unsigned math whereas I want just signed probably
@@ -16,6 +13,10 @@ Todo
 * enable/disable tooltip mode
 
 * change routing of OSC somehow
+
+* synch instructions
+
+* modulo instruction?
 
 Done
 ----
@@ -45,7 +46,9 @@ Done
 * simplify instruction set
 * add syscall or special register for note output
 * add ability for playing notes through midi/os
-
+* reimplement tooltips
+* write special parse functions where they're needed
+* write special disassemble functions where they're needed
 
 Maybe
 -----

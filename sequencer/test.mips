@@ -1,5 +1,5 @@
-OR      r1 r1 0x1
-OR      r2 r2 0x5
+BOR     r1 r1 0x1
+BOR     r2 r2 0x5
 ADD     r3 r2 r1
 ADD     r4 r4 0x10
 ADD     r5 r4 0x20
@@ -8,4 +8,14 @@ LOAD    r11 r10 0
 ADD     r11 r11 0x1000
 SAVE    r11 r12 0x1
 OSC     r12 r11 r10
+JGE     r11 r5 0
+NOP
+NOP
+RND     r1
+ADD     r13 r1 r5
+DIV     r13 r13 0x1000
+NOP
+NOP
+NOP
+OSC     r12 r13 r10
 JUMP    0

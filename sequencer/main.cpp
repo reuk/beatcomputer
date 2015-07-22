@@ -124,7 +124,7 @@ public:
     }
 
     static int get_width() {
-        return 32;
+        return 64;
     }
 };
 
