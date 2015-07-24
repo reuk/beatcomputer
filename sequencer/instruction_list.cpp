@@ -44,7 +44,7 @@ Instruction InstructionList::assemble(string & str) const {
 
     for (auto j : i->second) {
         try {
-            return j->assemble(tokens);
+            return j->assemble({tokens.begin() + 1, tokens.end()});
         } catch (const runtime_error & re) {
         }
     }
@@ -84,7 +84,9 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
 }
 
 string InstructionList::disassemble(Instruction instr) const {
-    return descriptor_for_instruction(instr)->disassemble(instr);
+    return
+            descriptor_for_instruction(instr)->get_string() + " " +
+            descriptor_for_instruction(instr)->disassemble(instr);
 }
 
 string InstructionList::tooltip(Instruction instr) const {

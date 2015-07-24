@@ -17,3 +17,5 @@ add_definitions(${test_file_flag})
 add_executable(${name} ${sources})
 
 target_link_libraries(${name} beatcomputer_common gtest)
+
+add_test(beatcomputer_common_test ${name})

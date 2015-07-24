@@ -61,26 +61,23 @@ public:
 
     virtual InstructionR assemble_specific(
         const std::vector<std::string> & str) const {
-        if (str.size() != 4) {
+        if (str.size() != 3) {
             throw std::runtime_error("instruction takes three arguments");
         }
         InstructionR r;
         r.op = 0x0;
         r.funct =
             SpecificInstructionDescriptor<InstructionR, id>::get_id_code();
-        r.rd = parse_register(str[1]);
-        r.rs = parse_register(str[2]);
-        r.rt = parse_register(str[3]);
+        r.rd = parse_register(str[0]);
+        r.rs = parse_register(str[1]);
+        r.rt = parse_register(str[2]);
         r.shamt = 0x0;
         return r;
     }
 
     virtual std::string disassemble_specific(InstructionR instr) const {
         std::stringstream ss;
-
-        ss << get_string() << " R" << instr.rd << " R" << instr.rs << " R"
-           << instr.rt;
-
+        ss << "R" << instr.rd << " R" << instr.rs << " R" << instr.rt;
         return ss.str();
     }
 
@@ -121,23 +118,20 @@ public:
 
     virtual InstructionI assemble_specific(
         const std::vector<std::string> & str) const {
-        if (str.size() != 4) {
+        if (str.size() != 3) {
             throw std::runtime_error("instruction takes three arguments");
         }
         InstructionI r;
         r.op = SpecificInstructionDescriptor<InstructionI, id>::get_id_code();
-        r.rt = parse_register(str[1]);
-        r.rs = parse_register(str[2]);
-        r.immediate = parse_immediate(str[3]);
+        r.rt = parse_register(str[0]);
+        r.rs = parse_register(str[1]);
+        r.immediate = parse_immediate(str[2]);
         return r;
     }
 
     virtual std::string disassemble_specific(InstructionI instr) const {
         std::stringstream ss;
-
-        ss << get_string() << " R" << instr.rt << " R" << instr.rs << " "
-           << instr.immediate;
-
+        ss << "R" << instr.rt << " R" << instr.rs << " " << instr.immediate;
         return ss.str();
     }
 
@@ -175,20 +169,18 @@ public:
 
     virtual InstructionJ assemble_specific(
         const std::vector<std::string> & str) const {
-        if (str.size() != 2) {
+        if (str.size() != 1) {
             throw std::runtime_error("instruction takes one argument");
         }
         InstructionJ r;
         r.op = SpecificInstructionDescriptor<InstructionJ, id>::get_id_code();
-        r.address = parse_address(str[1]);
+        r.address = parse_address(str[0]);
         return r;
     }
 
     virtual std::string disassemble_specific(InstructionJ instr) const {
         std::stringstream ss;
-
-        ss << get_string() << " " << instr.address;
-
+        ss << instr.address;
         return ss.str();
     }
 

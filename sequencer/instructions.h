@@ -15,7 +15,7 @@ struct InstructionI {
     uint32_t op : 6;
     uint32_t rs : 5;
     uint32_t rt : 5;
-    uint32_t immediate : 16;
+    int32_t immediate : 16;
 };
 
 struct InstructionJ {

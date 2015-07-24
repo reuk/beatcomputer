@@ -7,4 +7,4 @@ void Logger::restart() {
     ofstream of(fname, ofstream::trunc);
 }
 
-const string Logger::fname("gl.log");
+const string Logger::fname("logfile.txt");
