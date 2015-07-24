@@ -159,12 +159,12 @@ InstructionI BNOT_I::assemble_specific(const vector<string> &str) const {
 }
 string BNOT_R::disassemble_specific(InstructionR instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rd << " R" << instr.rs;
+    ss << "R" << instr.rd << " R" << instr.rs;
     return ss.str();
 }
 string BNOT_I::disassemble_specific(InstructionI instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rs << " " << instr.immediate;
+    ss << "R" << instr.rs << " " << instr.immediate;
     return ss.str();
 }
 
@@ -194,12 +194,12 @@ InstructionI NOT_I::assemble_specific(const vector<string> &str) const {
 }
 string NOT_R::disassemble_specific(InstructionR instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rd << " R" << instr.rs;
+    ss << "R" << instr.rd << " R" << instr.rs;
     return ss.str();
 }
 string NOT_I::disassemble_specific(InstructionI instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rs << " " << instr.immediate;
+    ss << "R" << instr.rs << " " << instr.immediate;
     return ss.str();
 }
 
@@ -229,12 +229,12 @@ InstructionI MOVE_I::assemble_specific(const vector<string> &str) const {
 }
 string MOVE_R::disassemble_specific(InstructionR instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rd << " R" << instr.rs;
+    ss << "R" << instr.rd << " R" << instr.rs;
     return ss.str();
 }
 string MOVE_I::disassemble_specific(InstructionI instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rs << " " << instr.immediate;
+    ss << "R" << instr.rs << " " << instr.immediate;
     return ss.str();
 }
 
@@ -254,6 +254,6 @@ InstructionR RND::assemble_specific(const vector<string> &str) const {
 }
 string RND::disassemble_specific(InstructionR instr) const {
     std::stringstream ss;
-    ss << get_string() << " R" << instr.rd;
+    ss << "R" << instr.rd;
     return ss.str();
 }

@@ -7,17 +7,15 @@
 using namespace std;
 
 int32_t parse_number(const string & str) {
-    regex reg("(?:\\-|\\+)?(?:(?:0x[0-9a-fA-F]*)|(?:[0-9]*))");
+    regex reg("(?:\\-|\\+)?(?:(?:0[xX][0-9a-fA-F]+)|(?:[0-9]+))");
     smatch m;
     if (!regex_match(str, m, reg)) {
-        throw runtime_error("no such immediate");
+        throw runtime_error(str + " is not a number");
     }
     return stol(str, 0, 0);
 }
 
 uint32_t parse_register(const string & str) {
-    Logger::log("parse register: ", str);
-
     regex reg("R([1-9][0-9]+|[0-9])");
     smatch m;
 

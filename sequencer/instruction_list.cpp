@@ -42,13 +42,21 @@ Instruction InstructionList::assemble(string & str) const {
         throw runtime_error("no such instruction: " + tokens.front());
     }
 
+    vector<string> failure_reasons;
     for (auto j : i->second) {
         try {
             return j->assemble({tokens.begin() + 1, tokens.end()});
         } catch (const runtime_error & re) {
+            failure_reasons.push_back(re.what());
         }
     }
-    throw runtime_error("unable to assemble instruction: " + tokens.front());
+
+    stringstream ss;
+    ss << "unable to assemble instruction: " << str << endl;
+    for (auto i : failure_reasons)
+        ss << i << endl;
+
+    throw runtime_error(ss.str());
 }
 
 shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(

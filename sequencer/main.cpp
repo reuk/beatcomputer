@@ -27,73 +27,90 @@ string machine_word(uint32_t word) {
     return ss.str();
 }
 
-class BoxedWindow : public Window {
-public:
-    BoxedWindow(WINDOW *parent, int height, int width, int starty, int startx)
-        : Window(parent, height, width, starty, startx) {
-    }
+struct StatusDisplay {
+    virtual void draw(const InstructionList & il, const Core & core, const vector<Instruction> & memory) const = 0;
+};
 
-    void draw(const InstructionList &il, Core &core,
-              vector<Instruction> &memory) const {
-        erase();
+template<typename T>
+class BoxedWindow : public Window, public StatusDisplay {
+public:
+    BoxedWindow(const string & title, WINDOW *parent, int height, int starty, int startx)
+        : Window(parent, height, get_width(), starty, startx)
+        , contents(*this, height - 2, 1, 1) {
+
         box(0, 0);
 
-        draw_contents(il, core, memory);
+        w_attron(A_BOLD);
+        print(0, (get_width() - title.size()) / 2, title);
+        w_attroff(A_BOLD);
+    }
+
+    void draw(const InstructionList &il, const Core &core,
+              const vector<Instruction> &memory) const override {
+        contents.draw(il, core, memory);
+        refresh();
+    }
+
+    static int get_width() {
+        return 2 + T::get_width();
+    }
+
+private:
+    T contents;
+};
+
+class MachineCodeWindow : public Window, public StatusDisplay {
+public:
+    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
+        : Window(parent, height, get_width(), starty, startx) {
+    }
+
+    void draw(const InstructionList &il, const Core &core,
+              const vector<Instruction> &memory) const {
+        erase();
+
+        for (auto i = 0; i != memory.size(); ++i) {
+            auto attr = i == core.ip;
+
+            if (attr)
+                w_attron(A_BOLD | COLOR_PAIR(1));
+            print(i, 0, machine_word(memory[i].raw));
+            if (attr)
+                w_attroff(A_BOLD | COLOR_PAIR(1));
+        }
 
         refresh();
     }
 
-    virtual void draw_contents(const InstructionList &il, Core &core,
-                               vector<Instruction> &memory) const = 0;
-};
-
-class MachineCodeWindow : public BoxedWindow {
-public:
-    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
-        : BoxedWindow(parent, height, get_width(), starty, startx) {
-    }
-
-    void draw_contents(const InstructionList &il, Core &core,
-                       vector<Instruction> &memory) const override {
-        auto line = 0;
-        for (const auto &i : memory) {
-            auto attr = line == core.ip;
-
-            if (attr)
-                w_attron(A_BOLD | COLOR_PAIR(1));
-            print(1 + line, 1, machine_word(i.raw));
-            if (attr)
-                w_attroff(A_BOLD | COLOR_PAIR(1));
-
-            line += 1;
-        }
-    }
-
     static int get_width() {
-        return 10;
+        return 8;
     }
 };
 
-class MnemonicWindow : public BoxedWindow {
+class MnemonicWindow : public Window, public StatusDisplay {
 public:
     MnemonicWindow(WINDOW *parent, int height, int starty, int startx)
-        : BoxedWindow(parent, height, get_width(), starty, startx) {
+        : Window(parent, height, get_width(), starty, startx) {
     }
 
-    void draw_contents(const InstructionList &il, Core &core,
-                       vector<Instruction> &memory) const override {
+    void draw(const InstructionList &il, const Core &core,
+              const vector<Instruction> &memory) const {
+        erase();
+
         auto line = 0;
         for (const auto &i : memory) {
             auto attr = line == core.ip;
 
             if (attr)
                 w_attron(A_BOLD | COLOR_PAIR(1));
-            print(1 + line, 1, il.disassemble(i));
+            print(line, 0, il.disassemble(i));
             if (attr)
                 w_attroff(A_BOLD | COLOR_PAIR(1));
 
             line += 1;
         }
+
+        refresh();
     }
 
     static int get_width() {
@@ -101,41 +118,47 @@ public:
     }
 };
 
-class TooltipWindow : public BoxedWindow {
+class TooltipWindow : public Window, public StatusDisplay {
 public:
     TooltipWindow(WINDOW *parent, int height, int starty, int startx)
-        : BoxedWindow(parent, height, get_width(), starty, startx) {
+        : Window(parent, height, get_width(), starty, startx) {
     }
 
-    void draw_contents(const InstructionList &il, Core &core,
-                       vector<Instruction> &memory) const override {
+    void draw(const InstructionList &il, const Core &core,
+              const vector<Instruction> &memory) const {
+        erase();
+
         auto line = 0;
         for (const auto &i : memory) {
             auto attr = line == core.ip;
 
             if (attr)
                 w_attron(A_BOLD | COLOR_PAIR(1));
-            print(1 + line, 1, il.tooltip(i));
+            print(line, 0, il.tooltip(i));
             if (attr)
                 w_attroff(A_BOLD | COLOR_PAIR(1));
 
             line += 1;
         }
+
+        refresh();
     }
 
     static int get_width() {
-        return 64;
+        return 50;
     }
 };
 
-class CoreCoreWindow : public BoxedWindow {
+class CoreCoreWindow : public Window, public StatusDisplay {
 public:
     CoreCoreWindow(WINDOW *parent, int height, int starty, int startx)
-        : BoxedWindow(parent, height, get_width(), starty, startx) {
+        : Window(parent, height, get_width(), starty, startx) {
     }
 
-    void draw_contents(const InstructionList &il, Core &core,
-                       vector<Instruction> &memory) const override {
+    void draw(const InstructionList &il, const Core &core,
+              const vector<Instruction> &memory) const {
+        erase();
+
         auto register_string = [](auto i) {
             stringstream ss;
             ss << "R" << i;
@@ -146,7 +169,7 @@ public:
         auto print_register = [this, &line](auto reg_id, auto value) {
             stringstream ss;
             ss << setw(3) << reg_id << ": " << machine_word(value);
-            print(1 + line, 1, ss.str());
+            print(line, 0, ss.str());
 
             line += 1;
         };
@@ -157,10 +180,12 @@ public:
 
         print_register("SP", core.sp);
         print_register("IP", core.ip);
+
+        refresh();
     }
 
     static int get_width() {
-        return 2 + 5 + 8;
+        return 5 + 8;
     }
 };
 
@@ -169,17 +194,17 @@ public:
     CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
         : Window(parent, HEIGHT,
-                 MachineCodeWindow::get_width() + MnemonicWindow::get_width() +
-                     TooltipWindow::get_width() + CoreCoreWindow::get_width(),
+                 BoxedWindow<MachineCodeWindow>::get_width() + BoxedWindow<MnemonicWindow>::get_width() +
+                     BoxedWindow<TooltipWindow>::get_width() + BoxedWindow<CoreCoreWindow>::get_width(),
                  starty, startx)
         , il(il)
-        , window_machine_code(*this, 0, 0, 0)
-        , window_mnemonic(*this, 0, 0, MachineCodeWindow::get_width())
-        , window_tooltip(*this, 0, 0, MachineCodeWindow::get_width() +
-                                          MnemonicWindow::get_width())
-        , window_core(*this, 0, 0, MachineCodeWindow::get_width() +
-                                       MnemonicWindow::get_width() +
-                                       TooltipWindow::get_width())
+        , window_machine_code("ram", *this, HEIGHT, 0, 0)
+        , window_mnemonic("code", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width())
+        , window_tooltip("tooltips", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width() +
+                                          BoxedWindow<MnemonicWindow>::get_width())
+        , window_core("status", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width() +
+                                       BoxedWindow<MnemonicWindow>::get_width() +
+                                       BoxedWindow<TooltipWindow>::get_width())
         , memory(MEMORY_LOCATIONS) {
     }
 
@@ -190,10 +215,11 @@ public:
 
     void draw() {
         for (auto i :
-             vector<BoxedWindow *>{&window_machine_code, &window_mnemonic,
-                                   &window_tooltip, &window_core}) {
+             vector<StatusDisplay *>{&window_machine_code, &window_mnemonic,
+                                     &window_tooltip, &window_core}) {
             i->draw(il, core, memory);
         }
+        refresh();
     }
 
     void execute() {
@@ -207,10 +233,10 @@ private:
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
 
-    MachineCodeWindow window_machine_code;
-    MnemonicWindow window_mnemonic;
-    TooltipWindow window_tooltip;
-    CoreCoreWindow window_core;
+    BoxedWindow<MachineCodeWindow> window_machine_code;
+    BoxedWindow<MnemonicWindow> window_mnemonic;
+    BoxedWindow<TooltipWindow> window_tooltip;
+    BoxedWindow<CoreCoreWindow> window_core;
 
     Core core;
     vector<Instruction> memory;
@@ -246,21 +272,23 @@ protected:
 };
 
 int main(int argc, char **argv) {
+    auto clean_up = []() {
+        echo();
+        keypad(stdscr, 0);
+        nocbreak();
+        endwin();
+    };
+
     try {
         Logger::restart();
 
         initscr();
-
-        if (!has_colors()) {
-            throw runtime_error("terminal doesn't support color");
-        }
-
         start_color();
-
-        init_pair(1, COLOR_RED, COLOR_BLACK);
-
         cbreak();
+        keypad(stdscr, 1);
         noecho();
+
+        init_pair(1, COLOR_BLUE, COLOR_BLACK);
 
         InstructionList instruction_list;
 
@@ -283,19 +311,18 @@ int main(int argc, char **argv) {
         SyncedCoreWindow cw(stdscr, instruction_list, 0, 0);
         cw.set_memory(memory);
         cw.draw();
+        cw.refresh();
 
         UdpListeningReceiveSocket s(
             IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &cw);
 
         s.RunUntilSigInt();
 
+        clean_up();
+        return EXIT_SUCCESS;
     } catch (const runtime_error &re) {
-        endwin();
+        clean_up();
         cout << re.what() << endl;
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    endwin();
-
-    return 0;
 }

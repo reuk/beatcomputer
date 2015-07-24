@@ -87,6 +87,7 @@ class InstructionTest__MUL_R : public InstructionTest<MUL_R> {};
 class InstructionTest__MUL_I : public InstructionTest<MUL_I> {};
 class InstructionTest__DIV_R : public InstructionTest<DIV_R> {};
 class InstructionTest__DIV_I : public InstructionTest<DIV_I> {};
+//
 class InstructionTest__BAND_R : public InstructionTest<BAND_R> {};
 class InstructionTest__BAND_I : public InstructionTest<BAND_I> {};
 class InstructionTest__BOR_R : public InstructionTest<BOR_R> {};

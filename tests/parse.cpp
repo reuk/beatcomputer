@@ -4,6 +4,23 @@
 
 using namespace std;
 
+TEST(parse_number, parse_number) {
+    ASSERT_NO_THROW(parse_number("0"));
+    ASSERT_NO_THROW(parse_number("1"));
+    ASSERT_NO_THROW(parse_number("0x0"));
+    ASSERT_NO_THROW(parse_number("0x1"));
+    ASSERT_NO_THROW(parse_number("+1"));
+    ASSERT_NO_THROW(parse_number("-1"));
+    ASSERT_NO_THROW(parse_number("+0x1"));
+    ASSERT_NO_THROW(parse_number("-0x1"));
+    ASSERT_THROW(parse_number("xyz"), runtime_error);
+    ASSERT_THROW(parse_number("0xfg"), runtime_error);
+    ASSERT_THROW(parse_number("0x"), runtime_error);
+    ASSERT_THROW(parse_number(""), runtime_error);
+    ASSERT_THROW(parse_number("+-1"), runtime_error);
+    ASSERT_THROW(parse_number("10a"), runtime_error);
+}
+
 TEST(parse_register, parse_register) {
     ASSERT_NO_THROW(parse_register("R0"));
     ASSERT_THROW(parse_register("xyz"), runtime_error);
