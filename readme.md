@@ -6,17 +6,17 @@ Todo
 
 * ncurses mode needs an editor
 
-* unit tests!
-    * check that math instructions work properly
-        * they might do just unsigned math whereas I want just signed probably
-
-* enable/disable tooltip mode
+* finish writing unit tests!
 
 * change routing of OSC somehow
 
 * synch instructions
-
 * modulo instruction?
+
+* extra tooling
+    * linting
+    * static analysis `scan-build`
+    * fuzzing? `afl-fuzz`
 
 Done
 ----
@@ -58,3 +58,5 @@ Maybe
 * comments - end of line only
 * add float support
 * labels (symbol table)
+* enable/disable tooltip mode
+
