@@ -89,6 +89,8 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
             return i->second;
         }
     }
+
+    throw runtime_error("unrecognised op type");
 }
 
 string InstructionList::disassemble(Instruction instr) const {
