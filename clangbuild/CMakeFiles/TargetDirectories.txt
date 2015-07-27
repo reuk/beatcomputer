@@ -1,0 +1,6 @@
+/Users/reuben/dev/beatcomputer/clangbuild/gtest/CMakeFiles/gtest.dir
+/Users/reuben/dev/beatcomputer/clangbuild/time_server/CMakeFiles/time_server.dir
+/Users/reuben/dev/beatcomputer/clangbuild/sequencer/CMakeFiles/beatcomputer_common.dir
+/Users/reuben/dev/beatcomputer/clangbuild/tests/CMakeFiles/tests.dir
+/Users/reuben/dev/beatcomputer/clangbuild/gtest/CMakeFiles/gtest_main.dir
+/Users/reuben/dev/beatcomputer/clangbuild/sequencer/CMakeFiles/beatcomputer.dir

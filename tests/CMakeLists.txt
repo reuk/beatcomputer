@@ -8,6 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/sequencer
     ${CMAKE_SOURCE_DIR}/gtest/include
 )
+link_directories(/usr/local/lib)
 
 set(name tests)
 file(GLOB sources "*.cpp")
