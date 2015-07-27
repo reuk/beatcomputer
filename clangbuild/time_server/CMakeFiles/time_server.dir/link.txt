@@ -1,1 +1,0 @@
-/usr/bin/clang++   -Wall -std=c++1y -O2 -g -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/time_server.dir/main.cpp.o  -o time_server  -loscpack 
