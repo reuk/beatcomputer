@@ -3,6 +3,7 @@
 #include "instruction_list.h"
 #include "window.h"
 #include "logger.h"
+#include "threaded_queue.h"
 
 #include <ncurses.h>
 
@@ -28,16 +29,17 @@ string machine_word(uint32_t word) {
 }
 
 struct StatusDisplay {
-    virtual void draw(const InstructionList & il, const Core & core, const vector<Instruction> & memory) const = 0;
+    virtual void draw(const InstructionList &il, const Core &core,
+                      const vector<Instruction> &memory) const = 0;
 };
 
-template<typename T>
+template <typename T>
 class BoxedWindow : public Window, public StatusDisplay {
 public:
-    BoxedWindow(const string & title, WINDOW *parent, int height, int starty, int startx)
+    BoxedWindow(const string &title, WINDOW *parent, int height, int starty,
+                int startx)
         : Window(parent, height, get_width(), starty, startx)
         , contents(*this, height - 2, 1, 1) {
-
         box(0, 0);
 
         w_attron(A_BOLD);
@@ -193,18 +195,22 @@ class CoreWindow : public Window {
 public:
     CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
-        : Window(parent, HEIGHT,
-                 BoxedWindow<MachineCodeWindow>::get_width() + BoxedWindow<MnemonicWindow>::get_width() +
-                     BoxedWindow<TooltipWindow>::get_width() + BoxedWindow<CoreCoreWindow>::get_width(),
+        : Window(parent, HEIGHT, BoxedWindow<MachineCodeWindow>::get_width() +
+                                     BoxedWindow<MnemonicWindow>::get_width() +
+                                     BoxedWindow<TooltipWindow>::get_width() +
+                                     BoxedWindow<CoreCoreWindow>::get_width(),
                  starty, startx)
         , il(il)
         , window_machine_code("ram", *this, HEIGHT, 0, 0)
-        , window_mnemonic("code", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width())
-        , window_tooltip("tooltips", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width() +
-                                          BoxedWindow<MnemonicWindow>::get_width())
-        , window_core("status", *this, HEIGHT, 0, BoxedWindow<MachineCodeWindow>::get_width() +
-                                       BoxedWindow<MnemonicWindow>::get_width() +
-                                       BoxedWindow<TooltipWindow>::get_width())
+        , window_mnemonic("code", *this, HEIGHT, 0,
+                          BoxedWindow<MachineCodeWindow>::get_width())
+        , window_tooltip("tooltips", *this, HEIGHT, 0,
+                         BoxedWindow<MachineCodeWindow>::get_width() +
+                             BoxedWindow<MnemonicWindow>::get_width())
+        , window_core("status", *this, HEIGHT, 0,
+                      BoxedWindow<MachineCodeWindow>::get_width() +
+                          BoxedWindow<MnemonicWindow>::get_width() +
+                          BoxedWindow<TooltipWindow>::get_width())
         , memory(MEMORY_LOCATIONS) {
     }
 
@@ -242,11 +248,20 @@ private:
     vector<Instruction> memory;
 };
 
-class SyncedCoreWindow : public CoreWindow, public osc::OscPacketListener {
+class Input {
 public:
-    SyncedCoreWindow(WINDOW *parent, const InstructionList &il, int starty,
-                     int startx)
-        : CoreWindow(parent, il, starty, startx) {
+    Input(int i)
+        : i(i) {
+    }
+
+private:
+    int i;
+};
+
+class OscReceiver : public osc::OscPacketListener {
+public:
+    OscReceiver(ThreadedQueue<Input> &tq)
+        : tq(tq) {
     }
 
 protected:
@@ -259,9 +274,7 @@ protected:
                 args >> str >> osc::EndMessage;
 
                 if (str == string("tick")) {
-                    execute();
-                    draw();
-                    refresh();
+                    tq.push(0);
                 }
             }
         } catch (const osc::Exception &e) {
@@ -269,19 +282,32 @@ protected:
                  << e.what() << endl;
         }
     }
+
+private:
+    ThreadedQueue<Input> &tq;
 };
 
+//  input queue
+//  handles keyboard and osc input
+//  osc receipt is done on a different thread, which pushes messages to the
+//  queue on the main thread
+//  keyboard input is done on main thread, messages pushed to queue
+//  then, somewhere else, we can pull messages off the queue one at a time
+
 int main(int argc, char **argv) {
-    auto clean_up = []() {
+    auto clean_up = [] {
         echo();
         keypad(stdscr, 0);
         nocbreak();
         endwin();
     };
 
-    try {
-        Logger::restart();
+    Logger::restart();
 
+    InstructionList instruction_list;
+    vector<Instruction> memory(32);
+
+    try {
         initscr();
         start_color();
         cbreak();
@@ -290,8 +316,6 @@ int main(int argc, char **argv) {
 
         init_pair(1, COLOR_BLUE, COLOR_BLACK);
 
-        InstructionList instruction_list;
-
         if (argc != 2) {
             throw runtime_error("expected one argument");
         }
@@ -299,7 +323,6 @@ int main(int argc, char **argv) {
         ifstream infile(argv[1]);
 
         auto index = 0;
-        vector<Instruction> memory(32);
 
         for (string line; getline(infile, line);) {
             if (!trim(line).empty()) {
@@ -307,22 +330,53 @@ int main(int argc, char **argv) {
                 memory[index++] = instr;
             }
         }
+    } catch (const runtime_error &re) {
+        clean_up();
+        cout << "Exception: " << re.what() << endl;
+        return EXIT_FAILURE;
+    }
 
-        SyncedCoreWindow cw(stdscr, instruction_list, 0, 0);
+    ThreadedQueue<Input> inputs;
+    OscReceiver receiver(inputs);
+    UdpListeningReceiveSocket s(
+        IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &receiver);
+    thread osc_thread([&s] { s.Run(); });
+
+    auto clean_up_thread = [&s, &osc_thread] {
+        s.AsynchronousBreak();
+        osc_thread.join();
+        echo();
+        keypad(stdscr, 0);
+        nocbreak();
+        endwin();
+    };
+
+    try {
+        CoreWindow cw(stdscr, instruction_list, 0, 0);
         cw.set_memory(memory);
         cw.draw();
         cw.refresh();
 
-        UdpListeningReceiveSocket s(
-            IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &cw);
+        bool read = true;
+        int in;
+        while (read && (in = getch())) {
+            switch (in) {
+                case 'q':
+                    read = false;
+                    break;
+                default:
+                    cw.execute();
+                    cw.draw();
+                    cw.refresh();
+                    break;
+            }
+        }
 
-        s.RunUntilSigInt();
-
-        clean_up();
+        clean_up_thread();
         return EXIT_SUCCESS;
     } catch (const runtime_error &re) {
-        clean_up();
-        cout << re.what() << endl;
+        clean_up_thread();
+        cout << "Exception: " << re.what() << endl;
         return EXIT_FAILURE;
     }
 }

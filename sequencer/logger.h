@@ -6,6 +6,7 @@
 #include <fstream>
 #include <chrono>
 #include <ctime>
+#include <mutex>
 
 class Logger {
 public:
@@ -15,6 +16,7 @@ public:
 
     template <typename... Ts>
     static void log(Ts &&... ts) {
+        std::lock_guard<std::mutex> lock(mutex);
         auto str = get_string(ts...);
         std::ofstream of(fname, std::ofstream::app);
         of << str << std::flush;
@@ -22,6 +24,7 @@ public:
 
     template <typename... Ts>
     static void log_err(Ts &&... ts) {
+        std::lock_guard<std::mutex> lock(mutex);
         auto str = get_string(ts...);
         std::ofstream of(fname, std::ofstream::app);
         of << str << std::flush;
@@ -43,15 +46,16 @@ public:
     };
 
 private:
+    static std::mutex mutex;
     static const std::string fname;
 
     template <typename... Ts>
     static std::string get_string(Ts &&... ts) {
         std::stringstream ss;
-        // auto t0 =
-        // std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        // auto t1 = localtime(&t0);
-        // ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": ";
+        auto t0 = std::chrono::system_clock::to_time_t(
+            std::chrono::system_clock::now());
+        auto t1 = localtime(&t0);
+        ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": ";
         build_string(ss, ts...);
         ss << std::endl;
         return ss.str();

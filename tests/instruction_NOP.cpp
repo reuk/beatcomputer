@@ -23,4 +23,3 @@ TEST_F(InstructionTest__NOP, execute) {
 
     ASSERT_EQ(a, b);
 }
-

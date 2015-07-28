@@ -94,9 +94,8 @@ shared_ptr<InstructionDescriptor> InstructionList::descriptor_for_instruction(
 }
 
 string InstructionList::disassemble(Instruction instr) const {
-    return
-            descriptor_for_instruction(instr)->get_string() + " " +
-            descriptor_for_instruction(instr)->disassemble(instr);
+    return descriptor_for_instruction(instr)->get_string() + " " +
+           descriptor_for_instruction(instr)->disassemble(instr);
 }
 
 string InstructionList::tooltip(Instruction instr) const {

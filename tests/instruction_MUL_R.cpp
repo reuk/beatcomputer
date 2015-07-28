@@ -33,4 +33,3 @@ TEST_F(InstructionTest__MUL_R, execute) {
     ASSERT_EQ(-2, core.reg[2]);
     ASSERT_EQ(-4, core.reg[3]);
 }
-

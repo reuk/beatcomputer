@@ -17,8 +17,10 @@ struct InstructionTest : public ::testing::Test {
 
     void test_r_instruction_3_args_assemble() {
         ASSERT_NO_THROW(descriptor.assemble({"R1", "R2", "R3"}));
-        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R33"}), std::runtime_error);
-        ASSERT_THROW(descriptor.assemble({"xyz", "R1", "R2"}), std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R33"}),
+                     std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"xyz", "R1", "R2"}),
+                     std::runtime_error);
         ASSERT_THROW(descriptor.assemble({"xyz"}), std::runtime_error);
         ASSERT_THROW(descriptor.assemble({}), std::runtime_error);
 
@@ -41,10 +43,14 @@ struct InstructionTest : public ::testing::Test {
     void test_i_instruction_3_args_assemble() {
         ASSERT_NO_THROW(descriptor.assemble({"R1", "R2", "5"}));
         ASSERT_NO_THROW(descriptor.assemble({"R1", "R2", "0x52"}));
-        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R3"}), std::runtime_error);
-        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R33"}), std::runtime_error);
-        ASSERT_THROW(descriptor.assemble({"R1", "R2", "xyz"}), std::runtime_error);
-        ASSERT_THROW(descriptor.assemble({"xyz", "R1", "R2"}), std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R3"}),
+                     std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"R1", "R2", "R33"}),
+                     std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"R1", "R2", "xyz"}),
+                     std::runtime_error);
+        ASSERT_THROW(descriptor.assemble({"xyz", "R1", "R2"}),
+                     std::runtime_error);
         ASSERT_THROW(descriptor.assemble({"xyz"}), std::runtime_error);
         ASSERT_THROW(descriptor.assemble({}), std::runtime_error);
 
