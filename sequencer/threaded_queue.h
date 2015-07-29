@@ -15,9 +15,10 @@ public:
     }
 
     void push(const T & t) {
-        std::unique_lock<std::mutex> lock(mutex);
-        queue.push(t);
-        lock.unlock();
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            queue.push(t);
+        }
         cond.notify_one();
     }
 

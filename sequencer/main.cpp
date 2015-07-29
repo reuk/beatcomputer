@@ -7,6 +7,8 @@
 
 #include <ncurses.h>
 
+#include <unistd.h>
+
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -250,11 +252,10 @@ private:
 
 class Input {
 public:
-    Input(int i)
+    Input(int i = 0)
         : i(i) {
     }
 
-private:
     int i;
 };
 
@@ -336,46 +337,82 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
+    CoreWindow cw(stdscr, instruction_list, 0, 0);
+
+    mutex global_mutex;
+
     ThreadedQueue<Input> inputs;
     OscReceiver receiver(inputs);
     UdpListeningReceiveSocket s(
         IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &receiver);
+
     thread osc_thread([&s] { s.Run(); });
 
-    auto clean_up_thread = [&s, &osc_thread] {
-        s.AsynchronousBreak();
-        osc_thread.join();
-        echo();
-        keypad(stdscr, 0);
-        nocbreak();
-        endwin();
-    };
+    atomic_bool run_keyboard_thread(true);
+    thread keyboard_thread([&run_keyboard_thread, &global_mutex, &inputs] {
+        //  set up file descriptor set with just stdin entry
+        fd_set fd;
+        FD_ZERO(&fd);
+        FD_SET(fileno(stdin), &fd);
+
+        //  set up timeout struct
+        struct timeval tv;
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+
+        //  we run select with a timeout
+        //  so essentially we check whether to keep polling input every
+        //  second, or after every stdin event
+        while (run_keyboard_thread) {
+            auto sav = fd;
+            if (select(fileno(stdin) + 1, &sav, nullptr, nullptr, &tv) > 0) {
+                lock_guard<mutex> lock(global_mutex);
+                inputs.push(getch());
+            }
+        }
+    });
+
+    auto clean_up_threads =
+        [&s, &osc_thread, &run_keyboard_thread, &keyboard_thread] {
+            s.AsynchronousBreak();
+            osc_thread.join();
+
+            run_keyboard_thread = false;
+            keyboard_thread.join();
+
+            //  no need to lock here because all other threads have been killed
+            echo();
+            keypad(stdscr, 0);
+            nocbreak();
+            endwin();
+        };
 
     try {
-        CoreWindow cw(stdscr, instruction_list, 0, 0);
         cw.set_memory(memory);
-        cw.draw();
-        cw.refresh();
 
-        bool read = true;
-        int in;
-        while (read && (in = getch())) {
-            switch (in) {
-                case 'q':
-                    read = false;
-                    break;
-                default:
-                    cw.execute();
-                    cw.draw();
-                    cw.refresh();
-                    break;
+        {
+            lock_guard<mutex> lock(global_mutex);
+            cw.draw();
+            cw.refresh();
+        }
+
+        auto quit = false;
+        while (!quit) {
+            Input popped;
+            inputs.pop(popped);
+
+            cw.execute();
+            {
+                lock_guard<mutex> lock(global_mutex);
+                cw.draw();
+                cw.refresh();
             }
         }
 
-        clean_up_thread();
+        clean_up_threads();
         return EXIT_SUCCESS;
     } catch (const runtime_error &re) {
-        clean_up_thread();
+        clean_up_threads();
         cout << "Exception: " << re.what() << endl;
         return EXIT_FAILURE;
     }
