@@ -52,7 +52,6 @@ public:
     void draw(const InstructionList &il, const Core &core,
               const vector<Instruction> &memory) const override {
         contents.draw(il, core, memory);
-        refresh();
     }
 
     static int get_width() {
@@ -197,22 +196,22 @@ class CoreWindow : public Window {
 public:
     CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
-        : Window(parent, HEIGHT, BoxedWindow<MachineCodeWindow>::get_width() +
-                                     BoxedWindow<MnemonicWindow>::get_width() +
-                                     BoxedWindow<TooltipWindow>::get_width() +
-                                     BoxedWindow<CoreCoreWindow>::get_width(),
+        : Window(parent, HEIGHT, decltype(window_machine_code)::get_width() +
+                                     decltype(window_mnemonic)::get_width() +
+                                     decltype(window_tooltip)::get_width() +
+                                     decltype(window_core)::get_width(),
                  starty, startx)
         , il(il)
         , window_machine_code("ram", *this, HEIGHT, 0, 0)
         , window_mnemonic("code", *this, HEIGHT, 0,
-                          BoxedWindow<MachineCodeWindow>::get_width())
+                          decltype(window_machine_code)::get_width())
         , window_tooltip("tooltips", *this, HEIGHT, 0,
-                         BoxedWindow<MachineCodeWindow>::get_width() +
-                             BoxedWindow<MnemonicWindow>::get_width())
+                         decltype(window_machine_code)::get_width() +
+                             decltype(window_mnemonic)::get_width())
         , window_core("status", *this, HEIGHT, 0,
-                      BoxedWindow<MachineCodeWindow>::get_width() +
-                          BoxedWindow<MnemonicWindow>::get_width() +
-                          BoxedWindow<TooltipWindow>::get_width())
+                      decltype(window_machine_code)::get_width() +
+                          decltype(window_mnemonic)::get_width() +
+                          decltype(window_tooltip)::get_width())
         , memory(MEMORY_LOCATIONS) {
     }
 
@@ -258,11 +257,16 @@ public:
     };
 
     Input(Type type = Type::TICK, int value = 0)
-        : type(type), value(value) {
+        : type(type)
+        , value(value) {
     }
 
-    Type get_type() const {return type;}
-    int get_value() const {return value;}
+    Type get_type() const {
+        return type;
+    }
+    int get_value() const {
+        return value;
+    }
 
 private:
     Type type;
@@ -298,6 +302,97 @@ private:
     ThreadedQueue<Input> &tq;
 };
 
+class Editor;
+
+struct EditorCommand {
+    virtual void do_command(Editor &e) = 0;
+    virtual void undo_command(Editor &e) = 0;
+};
+
+class Editor {
+public:
+    Editor(const InstructionList &instruction_list)
+        : instruction_list(instruction_list)
+        , memory(32) {
+    }
+
+    void load_from_file(const string &fname) {
+        ifstream infile(fname);
+
+        auto index = 0;
+        for (string line; getline(infile, line);) {
+            if (!trim(line).empty()) {
+                memory[index++] = instruction_list.assemble(line);
+            }
+        }
+    }
+
+    void do_command(unique_ptr<EditorCommand> &&command) {
+        command->do_command(*this);
+        commands.push(move(command));
+    }
+
+    void undo_command() {
+        if (!commands.empty()) {
+            auto i = move(commands.front());
+            commands.pop();
+            i->undo_command(*this);
+        }
+    }
+
+    void sync_from_memory() {
+        transform(begin(memory), end(memory), begin(mnemonics),
+                  [this](auto i) { return instruction_list.disassemble(i); });
+    }
+
+    void sync_from_mnemonics() {
+        transform(begin(mnemonics), end(mnemonics), begin(memory),
+                  [this](auto i) { return instruction_list.assemble(i); });
+    }
+
+private:
+    const InstructionList &instruction_list;
+    queue<unique_ptr<EditorCommand>> commands;
+
+public:
+    vector<Instruction> memory;
+    vector<string> mnemonics;
+};
+
+//  Data required for do_command should be invariant/const
+//  somehow it should be fed to the constructor
+
+class InsertCommand : public EditorCommand {
+public:
+    InsertCommand(int character)
+        : character(character) {
+    }
+
+    void do_command(Editor &e) override {
+        //  go to (y, x) and insert the character
+    }
+
+    void undo_command(Editor &e) override {
+        //  go to (y, x) and remove the character
+    }
+
+private:
+    const int character;
+};
+
+class BackspaceCommand : public EditorCommand {
+public:
+    void do_command(Editor &e) override {
+        //  go to (y, x) and insert the character
+    }
+
+    void undo_command(Editor &e) override {
+        //  go to (y, x) and remove the character
+    }
+
+private:
+};
+
 //  input queue
 //  handles keyboard and osc input
 //  osc receipt is done on a different thread, which pushes messages to the
@@ -316,7 +411,7 @@ int main(int argc, char **argv) {
     Logger::restart();
 
     InstructionList instruction_list;
-    vector<Instruction> memory(32);
+    Editor editor(instruction_list);
 
     try {
         initscr();
@@ -331,16 +426,7 @@ int main(int argc, char **argv) {
             throw runtime_error("expected one argument");
         }
 
-        ifstream infile(argv[1]);
-
-        auto index = 0;
-
-        for (string line; getline(infile, line);) {
-            if (!trim(line).empty()) {
-                auto instr = instruction_list.assemble(line);
-                memory[index++] = instr;
-            }
-        }
+        editor.load_from_file(argv[1]);
     } catch (const runtime_error &re) {
         clean_up();
         cout << "Exception: " << re.what() << endl;
@@ -376,7 +462,6 @@ int main(int argc, char **argv) {
         while (run_keyboard_thread) {
             auto sav = fd;
             if (select(fileno(stdin) + 1, &sav, nullptr, nullptr, &tv) > 0) {
-
                 //  if there is some input to fetch, we lock the 'curses' mutex
                 //  and then use getch to find out what the key is
                 lock_guard<mutex> lock(global_mutex);
@@ -407,8 +492,7 @@ int main(int argc, char **argv) {
     };
 
     try {
-        cw.set_memory(memory);
-
+        cw.set_memory(editor.memory);
         threaded_draw_refresh();
 
         auto quit = false;
@@ -424,7 +508,21 @@ int main(int argc, char **argv) {
                 case Input::Type::KEY:
                     auto key = popped.get_value();
 
-                    //  editing stuff goes here
+                    if (key < 127) {
+                        // int y, x;
+                        // getyx(stdscr, y, x);
+                        editor.do_command(make_unique<InsertCommand>(key));
+                    }
+
+                    if (key == KEY_BACKSPACE) {
+                        editor.do_command(make_unique<BackspaceCommand>());
+                    }
+
+                    /*
+                    if (key == UNDO) {
+                        editor.undo_command();
+                    }
+                    */
 
                     break;
             }
