@@ -252,11 +252,21 @@ private:
 
 class Input {
 public:
-    Input(int i = 0)
-        : i(i) {
+    enum class Type {
+        TICK,
+        KEY,
+    };
+
+    Input(Type type = Type::TICK, int value = 0)
+        : type(type), value(value) {
     }
 
-    int i;
+    Type get_type() const {return type;}
+    int get_value() const {return value;}
+
+private:
+    Type type;
+    int value;
 };
 
 class OscReceiver : public osc::OscPacketListener {
@@ -275,7 +285,7 @@ protected:
                 args >> str >> osc::EndMessage;
 
                 if (str == string("tick")) {
-                    tq.push(0);
+                    tq.push(Input(Input::Type::TICK));
                 }
             }
         } catch (const osc::Exception &e) {
@@ -360,14 +370,17 @@ int main(int argc, char **argv) {
         tv.tv_sec = 1;
         tv.tv_usec = 0;
 
-        //  we run select with a timeout
+        //  we keep running select with a short timeout
         //  so essentially we check whether to keep polling input every
         //  second, or after every stdin event
         while (run_keyboard_thread) {
             auto sav = fd;
             if (select(fileno(stdin) + 1, &sav, nullptr, nullptr, &tv) > 0) {
+
+                //  if there is some input to fetch, we lock the 'curses' mutex
+                //  and then use getch to find out what the key is
                 lock_guard<mutex> lock(global_mutex);
-                inputs.push(getch());
+                inputs.push(Input(Input::Type::KEY, getch()));
             }
         }
     });
@@ -387,26 +400,38 @@ int main(int argc, char **argv) {
             endwin();
         };
 
+    auto threaded_draw_refresh = [&global_mutex, &cw] {
+        lock_guard<mutex> lock(global_mutex);
+        cw.draw();
+        cw.refresh();
+    };
+
     try {
         cw.set_memory(memory);
 
-        {
-            lock_guard<mutex> lock(global_mutex);
-            cw.draw();
-            cw.refresh();
-        }
+        threaded_draw_refresh();
 
         auto quit = false;
         while (!quit) {
             Input popped;
             inputs.pop(popped);
 
-            cw.execute();
-            {
-                lock_guard<mutex> lock(global_mutex);
-                cw.draw();
-                cw.refresh();
+            switch (popped.get_type()) {
+                case Input::Type::TICK:
+                    cw.execute();
+                    break;
+
+                case Input::Type::KEY:
+                    auto key = popped.get_value();
+
+                    //  editing stuff goes here
+
+                    break;
             }
+
+            //  for the time being we assume that any input event will
+            //  require a redraw
+            threaded_draw_refresh();
         }
 
         clean_up_threads();
