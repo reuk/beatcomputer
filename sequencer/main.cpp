@@ -11,7 +11,11 @@
 
 #include <ncurses.h>
 
-#include <unistd.h>
+#include <gflags/gflags.h>
+
+#include "osc/OscReceivedElements.h"
+#include "osc/OscPacketListener.h"
+#include "ip/UdpSocket.h"
 
 #include <string>
 #include <iomanip>
@@ -22,11 +26,41 @@
 #include <chrono>
 #include <thread>
 
-#include "osc/OscReceivedElements.h"
-#include "osc/OscPacketListener.h"
-#include "ip/UdpSocket.h"
+#include <unistd.h>
 
 using namespace std;
+
+bool validate_port(const char *flagname, int32_t value) {
+    if (value > 0 && value < 32768) {
+        return true;
+    }
+    cout << "Invalid value for --" << flagname << ": " << value << endl;
+    return false;
+}
+
+bool validate_prefix(const char *flagname, const string &prefix) {
+    //  TODO prefix validator
+    return true;
+}
+
+bool validate_address(const char *flagname, const string &address) {
+    //  TODO address validator
+    return true;
+}
+
+DEFINE_int32(i_port, 7000, "Port on which to receive OSC");
+DEFINE_int32(o_port, 7001, "Port on which to send OSC");
+DEFINE_string(osc_prefix, "/beatcomputer", "Outbound OSC message prefix");
+DEFINE_string(osc_address, "127.0.0.1", "Outbound OSC message address");
+
+static const bool i_port_dummy =
+    gflags::RegisterFlagValidator(&FLAGS_i_port, &validate_port);
+static const bool o_port_dummy =
+    gflags::RegisterFlagValidator(&FLAGS_o_port, &validate_port);
+static const bool prefix_dummy =
+    gflags::RegisterFlagValidator(&FLAGS_osc_prefix, &validate_prefix);
+static const bool address_dummy =
+    gflags::RegisterFlagValidator(&FLAGS_osc_address, &validate_address);
 
 string machine_word(uint32_t word) {
     return build_string(setfill('0'), setw(8), hex, word);
@@ -35,17 +69,20 @@ string machine_word(uint32_t word) {
 struct StatusDisplay {
     StatusDisplay(const InstructionList &il, const Core &core,
                   const vector<Instruction> &memory)
-        : il(il), core(core), memory(memory) {
+        : il(il)
+        , core(core)
+        , memory(memory) {
     }
-    const InstructionList & il;
-    const Core & core;
-    const vector<Instruction> & memory;
+    const InstructionList &il;
+    const Core &core;
+    const vector<Instruction> &memory;
 };
 
 class MachineCodeWindow : public Window, public StatusDisplay {
 public:
     MachineCodeWindow(WINDOW *parent, int height, int starty, int startx,
-            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+                      const InstructionList &il, const Core &core,
+                      const vector<Instruction> &memory)
         : Window(parent, height, get_width(), starty, startx)
         , StatusDisplay(il, core, memory) {
     }
@@ -74,7 +111,8 @@ public:
 class MnemonicWindow : public Window, public StatusDisplay {
 public:
     MnemonicWindow(WINDOW *parent, int height, int starty, int startx,
-            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+                   const InstructionList &il, const Core &core,
+                   const vector<Instruction> &memory)
         : Window(parent, height, get_width(), starty, startx)
         , StatusDisplay(il, core, memory) {
     }
@@ -106,7 +144,8 @@ public:
 class TooltipWindow : public Window, public StatusDisplay {
 public:
     TooltipWindow(WINDOW *parent, int height, int starty, int startx,
-            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+                  const InstructionList &il, const Core &core,
+                  const vector<Instruction> &memory)
         : Window(parent, height, get_width(), starty, startx)
         , StatusDisplay(il, core, memory) {
     }
@@ -138,7 +177,8 @@ public:
 class CoreCoreWindow : public Window, public StatusDisplay {
 public:
     CoreCoreWindow(WINDOW *parent, int height, int starty, int startx,
-            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+                   const InstructionList &il, const Core &core,
+                   const vector<Instruction> &memory)
         : Window(parent, height, get_width(), starty, startx)
         , StatusDisplay(il, core, memory) {
     }
@@ -148,7 +188,8 @@ public:
 
         auto line = 0;
         auto print_register = [this, &line](auto reg_id, auto value) {
-            print(line, 0, build_string(setw(3), reg_id, ": ", machine_word(value)));
+            print(line, 0,
+                  build_string(setw(3), reg_id, ": ", machine_word(value)));
 
             line += 1;
         };
@@ -181,14 +222,17 @@ public:
         , memory(MEMORY_LOCATIONS)
         , window_machine_code("ram", *this, HEIGHT, 0, 0, il, core, memory)
         , window_mnemonic("code", *this, HEIGHT, 0,
-                          decltype(window_machine_code)::get_width(), il, core, memory)
+                          decltype(window_machine_code)::get_width(), il, core,
+                          memory)
         , window_tooltip("tooltips", *this, HEIGHT, 0,
                          decltype(window_machine_code)::get_width() +
-                             decltype(window_mnemonic)::get_width(), il, core, memory)
+                             decltype(window_mnemonic)::get_width(),
+                         il, core, memory)
         , window_core("status", *this, HEIGHT, 0,
                       decltype(window_machine_code)::get_width() +
                           decltype(window_mnemonic)::get_width() +
-                          decltype(window_tooltip)::get_width(), il, core, memory) {
+                          decltype(window_tooltip)::get_width(),
+                      il, core, memory) {
     }
 
     void set_memory(const vector<Instruction> &m) {
@@ -199,7 +243,7 @@ public:
     void draw() const override {
         for (auto i :
              vector<const Window *>{&window_machine_code, &window_mnemonic,
-                                     &window_tooltip, &window_core}) {
+                                    &window_tooltip, &window_core}) {
             i->draw();
         }
     }
@@ -241,7 +285,14 @@ protected:
                 if (str == string("tick")) {
                     tq.push(Input(Input::Type::TICK));
                 }
+            } else if (m.AddressPattern() == string("/key_server")) {
+                osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
+                int key;
+                args >> key >> osc::EndMessage;
+
+                tq.push(Input(Input::Type::KEY, key));
             }
+
         } catch (const osc::Exception &e) {
             cout << "error parsing message: " << m.AddressPattern() << ": "
                  << e.what() << endl;
@@ -252,38 +303,33 @@ private:
     ThreadedQueue<Input> &tq;
 };
 
+void clean_up() {
+    echo();
+    keypad(stdscr, 0);
+    nocbreak();
+    endwin();
+}
+
 int main(int argc, char **argv) {
-    auto clean_up = [] {
-        echo();
-        keypad(stdscr, 0);
-        nocbreak();
-        endwin();
-    };
-
     Logger::restart();
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    InstructionList instruction_list;
-    Editor editor(instruction_list);
-
-    try {
-        initscr();
-        start_color();
-        cbreak();
-        keypad(stdscr, 1);
-        noecho();
-
-        init_pair(1, COLOR_BLUE, COLOR_BLACK);
-
-        if (argc != 2) {
-            throw runtime_error("expected one argument");
-        }
-
-        editor.load_from_file(argv[1]);
-    } catch (const runtime_error &re) {
-        clean_up();
-        cout << "Exception: " << re.what() << endl;
+    if (argc != 2) {
+        cout << "Expected an input file" << endl;
         return EXIT_FAILURE;
     }
+
+    InstructionList instruction_list(
+        InstructionManager(FLAGS_o_port, FLAGS_osc_prefix, FLAGS_osc_address));
+    Editor editor(instruction_list);
+    editor.load_from_file(argv[1]);
+
+    initscr();
+    start_color();
+    cbreak();
+    keypad(stdscr, 1);
+    noecho();
+    init_pair(1, COLOR_BLUE, COLOR_BLACK);
 
     CoreWindow cw(stdscr, instruction_list, 0, 0);
 
@@ -292,7 +338,7 @@ int main(int argc, char **argv) {
     ThreadedQueue<Input> inputs;
     OscReceiver receiver(inputs);
     UdpListeningReceiveSocket s(
-        IpEndpointName(IpEndpointName::ANY_ADDRESS, 7000), &receiver);
+        IpEndpointName(IpEndpointName::ANY_ADDRESS, FLAGS_i_port), &receiver);
 
     thread osc_thread([&s] { s.Run(); });
 
@@ -330,11 +376,7 @@ int main(int argc, char **argv) {
             run_keyboard_thread = false;
             keyboard_thread.join();
 
-            //  no need to lock here because all other threads have been killed
-            echo();
-            keypad(stdscr, 0);
-            nocbreak();
-            endwin();
+            clean_up();
         };
 
     auto threaded_draw = [&global_mutex, &cw] {

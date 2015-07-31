@@ -49,12 +49,14 @@ void Editor::sync_from_mnemonics() {
 
 vector<Instruction> Editor::get_memory() const {
     vector<Instruction> ret(store.size());
-    transform(begin(store), end(store), begin(ret), [](auto i){return i.first;});
+    transform(begin(store), end(store), begin(ret),
+              [](auto i) { return i.first; });
     return ret;
 }
 
 vector<string> Editor::get_mnemonics() const {
     vector<string> ret(store.size());
-    transform(begin(store), end(store), begin(ret), [](auto i){return i.second;});
+    transform(begin(store), end(store), begin(ret),
+              [](auto i) { return i.second; });
     return ret;
 }

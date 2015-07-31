@@ -12,10 +12,12 @@ endif()
 set(name beatcomputer)
 file(GLOB lib_sources "*.cpp")
 
+find_package(gflags REQUIRED)
+
 add_library(${name}_common ${lib_sources})
 target_link_libraries(${name}_common oscpack)
 
-set(libraries ncurses oscpack)
+set(libraries ncurses oscpack gflags)
 add_executable(${name} main.cpp)
 
 target_link_libraries(${name} ${name}_common ${libraries})

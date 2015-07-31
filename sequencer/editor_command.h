@@ -15,6 +15,7 @@ public:
     InsertCommand(int character);
     void do_command(Editor &e) override;
     void undo_command(Editor &e) override;
+
 private:
     const int character;
 };
@@ -23,5 +24,6 @@ class BackspaceCommand : public EditorCommand {
 public:
     void do_command(Editor &e) override;
     void undo_command(Editor &e) override;
+
 private:
 };

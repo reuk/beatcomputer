@@ -57,7 +57,8 @@ private:
             std::chrono::system_clock::now());
         auto t1 = localtime(&t0);
         std::stringstream ss;
-        ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": " << build_string(ts...) << std::endl;
+        ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": "
+           << build_string(ts...) << std::endl;
         return ss.str();
     }
 };

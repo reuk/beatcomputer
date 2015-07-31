@@ -29,4 +29,3 @@ private:
 public:
     std::vector<std::pair<Instruction, std::string>> store;
 };
-

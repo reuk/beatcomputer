@@ -10,7 +10,7 @@
 
 class InstructionList {
 public:
-    InstructionList(const InstructionManager & im = InstructionManager());
+    InstructionList(const InstructionManager & im);
 
     Instruction assemble(std::string & str) const;
     std::string disassemble(Instruction instr) const;

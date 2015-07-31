@@ -45,16 +45,15 @@ using namespace std;
     R_INSTRUCTION_IMPLEMENTATION(Name##_R, #Name, Id, rd = rs Op rt, tooltip); \
     I_INSTRUCTION_IMPLEMENTATION(Name##_I, #Name, Id, rt = rs Op im, tooltip);
 
-void send_osc(int32_t a, int32_t b, int32_t c) {
+void send_osc(int port, const string &prefix, const string &address, int32_t a,
+              int32_t b, int32_t c) {
     using namespace osc;
 
-    auto address = "127.0.0.1";
-    auto port = 7001;
-    UdpTransmitSocket socket(IpEndpointName(address, port));
+    UdpTransmitSocket socket(IpEndpointName(address.c_str(), port));
 
     array<char, 1024> buffer;
     OutboundPacketStream packet_stream(buffer.data(), buffer.size());
-    packet_stream << BeginBundleImmediate << BeginMessage("/beatcomputer") << a
+    packet_stream << BeginBundleImmediate << BeginMessage(prefix.c_str()) << a
                   << b << c << EndMessage << EndBundle;
 
     socket.Send(packet_stream.Data(), packet_stream.Size());
@@ -94,9 +93,13 @@ BINARY_INSTRUCTION_IMPLEMENTATION(AND, 0x0B, &&,
                                   "AND    a b c   -> a = b && c");
 BINARY_INSTRUCTION_IMPLEMENTATION(OR, 0x0C, ||, "OR     a b c   -> a = b || c");
 
-R_INSTRUCTION_IMPLEMENTATION(OSC_R, "OSC", 0x0F, send_osc(rd, rs, rt),
+R_INSTRUCTION_IMPLEMENTATION(OSC_R, "OSC", 0x0F,
+                             send_osc(osc_out_port, osc_out_prefix,
+                                      osc_out_address, rd, rs, rt),
                              "OSC    a b c   -> send osc");
-I_INSTRUCTION_IMPLEMENTATION(OSC_I, "OSC", 0x0F, send_osc(rt, rs, im),
+I_INSTRUCTION_IMPLEMENTATION(OSC_I, "OSC", 0x0F,
+                             send_osc(osc_out_port, osc_out_prefix,
+                                      osc_out_address, rt, rs, im),
                              "OSC    a b c   -> send osc");
 J_INSTRUCTION_IMPLEMENTATION(JUMP, "JUMP", 0x12, core.ip = address,
                              "JUMP   a       -> go to a");
@@ -256,4 +259,18 @@ string RND::disassemble_specific(InstructionR instr) const {
     std::stringstream ss;
     ss << "R" << instr.rd;
     return ss.str();
+}
+
+OSC_R::OSC_R(int osc_out_port, const std::string &osc_out_prefix,
+             const std::string &osc_out_address)
+    : osc_out_port(osc_out_port)
+    , osc_out_prefix(osc_out_prefix)
+    , osc_out_address(osc_out_address) {
+}
+
+OSC_I::OSC_I(int osc_out_port, const std::string &osc_out_prefix,
+             const std::string &osc_out_address)
+    : osc_out_port(osc_out_port)
+    , osc_out_prefix(osc_out_prefix)
+    , osc_out_address(osc_out_address) {
 }

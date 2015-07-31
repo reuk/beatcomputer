@@ -74,7 +74,6 @@ BINARY_INSTRUCTION_DEFINITION(AND, 0x0B);
 BINARY_INSTRUCTION_DEFINITION(OR, 0x0C);
 BINARY_INSTRUCTION_DEFINITION_SPECIAL(NOT, 0x0D);
 BINARY_INSTRUCTION_DEFINITION_SPECIAL(MOVE, 0x0E);
-BINARY_INSTRUCTION_DEFINITION(OSC, 0x0F);
 
 I_INSTRUCTION_DEFINITION(LOAD, 0x10);
 I_INSTRUCTION_DEFINITION(SAVE, 0x11);
@@ -87,3 +86,31 @@ I_INSTRUCTION_DEFINITION(JG, 0x17);
 I_INSTRUCTION_DEFINITION(JGE, 0x18);
 
 R_INSTRUCTION_DEFINITION_SPECIAL(RND, 0x19);
+
+struct OSC_R : RInstructionDescriptor<0x0F> {
+    OSC_R(int osc_out_port, const std::string & osc_out_prefix,
+          const std::string & osc_out_address);
+    void execute_specific(Core & core, std::vector<Instruction> & memory,
+                          int32_t & rs, int32_t & rt, int32_t & rd,
+                          uint32_t shamt) const override;
+    std::string get_tooltip() const override;
+
+private:
+    const int osc_out_port;
+    const std::string osc_out_prefix;
+    const std::string osc_out_address;
+};
+
+struct OSC_I : IInstructionDescriptor<0x0F> {
+    OSC_I(int osc_out_port, const std::string & osc_out_prefix,
+          const std::string & osc_out_address);
+    void execute_specific(Core & core, std::vector<Instruction> & memory,
+                          int32_t & rs, int32_t & rt,
+                          int32_t immediate) const override;
+    std::string get_tooltip() const override;
+
+private:
+    const int osc_out_port;
+    const std::string osc_out_prefix;
+    const std::string osc_out_address;
+};

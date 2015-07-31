@@ -4,11 +4,15 @@ Assembly Live Coding Machine
 Todo
 ----
 
+* json config
+    * host
+    * port
+    * osc prefix
+        * change routing of OSC somehow
+
 * ncurses mode needs an editor
 
 * finish writing unit tests!
-
-* change routing of OSC somehow
 
 * synch instructions
 * modulo instruction?
@@ -49,6 +53,7 @@ Done
 * reimplement tooltips
 * write special parse functions where they're needed
 * write special disassemble functions where they're needed
+* keypresses over osc
 
 Maybe
 -----

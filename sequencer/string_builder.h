@@ -11,7 +11,7 @@ void build_string(std::stringstream &ss, T &&t, Ts... ts) {
     build_string(ss, ts...);
 }
 
-template<typename... Ts>
+template <typename... Ts>
 std::string build_string(Ts &&... ts) {
     std::stringstream ss;
     build_string(ss, ts...);
