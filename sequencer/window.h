@@ -32,6 +32,8 @@ public:
     virtual int w_attron(int attr) const;
     virtual int w_attroff(int attr) const;
 
+    virtual void draw() const = 0;
+
     operator WINDOW *();
 
 private:

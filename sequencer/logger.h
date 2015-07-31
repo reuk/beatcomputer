@@ -8,6 +8,8 @@
 #include <ctime>
 #include <mutex>
 
+#include "string_builder.h"
+
 class Logger {
 public:
     Logger() = delete;
@@ -51,25 +53,12 @@ private:
 
     template <typename... Ts>
     static std::string get_string(Ts &&... ts) {
-        std::stringstream ss;
         auto t0 = std::chrono::system_clock::to_time_t(
             std::chrono::system_clock::now());
         auto t1 = localtime(&t0);
-        ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": ";
-        build_string(ss, ts...);
-        ss << std::endl;
+        std::stringstream ss;
+        ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": " << build_string(ts...) << std::endl;
         return ss.str();
-    }
-
-    template <typename T>
-    static void build_string(std::stringstream &ss, T &&t) {
-        ss << t;
-    }
-
-    template <typename T, typename... Ts>
-    static void build_string(std::stringstream &ss, T &&t, Ts... ts) {
-        ss << t;
-        build_string(ss, ts...);
     }
 };
 

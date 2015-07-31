@@ -2,8 +2,12 @@
 #include "trim.h"
 #include "instruction_list.h"
 #include "window.h"
+#include "boxed_window.h"
 #include "logger.h"
 #include "threaded_queue.h"
+#include "input.h"
+#include "editor.h"
+#include "editor_command.h"
 
 #include <ncurses.h>
 
@@ -25,51 +29,28 @@
 using namespace std;
 
 string machine_word(uint32_t word) {
-    stringstream ss;
-    ss << setfill('0') << setw(8) << hex << word;
-    return ss.str();
+    return build_string(setfill('0'), setw(8), hex, word);
 }
 
 struct StatusDisplay {
-    virtual void draw(const InstructionList &il, const Core &core,
-                      const vector<Instruction> &memory) const = 0;
-};
-
-template <typename T>
-class BoxedWindow : public Window, public StatusDisplay {
-public:
-    BoxedWindow(const string &title, WINDOW *parent, int height, int starty,
-                int startx)
-        : Window(parent, height, get_width(), starty, startx)
-        , contents(*this, height - 2, 1, 1) {
-        box(0, 0);
-
-        w_attron(A_BOLD);
-        print(0, (get_width() - title.size()) / 2, title);
-        w_attroff(A_BOLD);
+    StatusDisplay(const InstructionList &il, const Core &core,
+                  const vector<Instruction> &memory)
+        : il(il), core(core), memory(memory) {
     }
-
-    void draw(const InstructionList &il, const Core &core,
-              const vector<Instruction> &memory) const override {
-        contents.draw(il, core, memory);
-    }
-
-    static int get_width() {
-        return 2 + T::get_width();
-    }
-
-private:
-    T contents;
+    const InstructionList & il;
+    const Core & core;
+    const vector<Instruction> & memory;
 };
 
 class MachineCodeWindow : public Window, public StatusDisplay {
 public:
-    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
-        : Window(parent, height, get_width(), starty, startx) {
+    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx,
+            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+        : Window(parent, height, get_width(), starty, startx)
+        , StatusDisplay(il, core, memory) {
     }
 
-    void draw(const InstructionList &il, const Core &core,
-              const vector<Instruction> &memory) const {
+    void draw() const override {
         erase();
 
         for (auto i = 0; i != memory.size(); ++i) {
@@ -92,12 +73,13 @@ public:
 
 class MnemonicWindow : public Window, public StatusDisplay {
 public:
-    MnemonicWindow(WINDOW *parent, int height, int starty, int startx)
-        : Window(parent, height, get_width(), starty, startx) {
+    MnemonicWindow(WINDOW *parent, int height, int starty, int startx,
+            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+        : Window(parent, height, get_width(), starty, startx)
+        , StatusDisplay(il, core, memory) {
     }
 
-    void draw(const InstructionList &il, const Core &core,
-              const vector<Instruction> &memory) const {
+    void draw() const override {
         erase();
 
         auto line = 0;
@@ -123,12 +105,13 @@ public:
 
 class TooltipWindow : public Window, public StatusDisplay {
 public:
-    TooltipWindow(WINDOW *parent, int height, int starty, int startx)
-        : Window(parent, height, get_width(), starty, startx) {
+    TooltipWindow(WINDOW *parent, int height, int starty, int startx,
+            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+        : Window(parent, height, get_width(), starty, startx)
+        , StatusDisplay(il, core, memory) {
     }
 
-    void draw(const InstructionList &il, const Core &core,
-              const vector<Instruction> &memory) const {
+    void draw() const override {
         erase();
 
         auto line = 0;
@@ -154,31 +137,24 @@ public:
 
 class CoreCoreWindow : public Window, public StatusDisplay {
 public:
-    CoreCoreWindow(WINDOW *parent, int height, int starty, int startx)
-        : Window(parent, height, get_width(), starty, startx) {
+    CoreCoreWindow(WINDOW *parent, int height, int starty, int startx,
+            const InstructionList & il, const Core & core, const vector<Instruction> & memory)
+        : Window(parent, height, get_width(), starty, startx)
+        , StatusDisplay(il, core, memory) {
     }
 
-    void draw(const InstructionList &il, const Core &core,
-              const vector<Instruction> &memory) const {
+    void draw() const override {
         erase();
-
-        auto register_string = [](auto i) {
-            stringstream ss;
-            ss << "R" << i;
-            return ss.str();
-        };
 
         auto line = 0;
         auto print_register = [this, &line](auto reg_id, auto value) {
-            stringstream ss;
-            ss << setw(3) << reg_id << ": " << machine_word(value);
-            print(line, 0, ss.str());
+            print(line, 0, build_string(setw(3), reg_id, ": ", machine_word(value)));
 
             line += 1;
         };
 
         for (auto i = 0; i != 30; ++i) {
-            print_register(register_string(i), core.reg[i]);
+            print_register(build_string("R", i), core.reg[i]);
         }
 
         print_register("SP", core.sp);
@@ -202,17 +178,17 @@ public:
                                      decltype(window_core)::get_width(),
                  starty, startx)
         , il(il)
-        , window_machine_code("ram", *this, HEIGHT, 0, 0)
+        , memory(MEMORY_LOCATIONS)
+        , window_machine_code("ram", *this, HEIGHT, 0, 0, il, core, memory)
         , window_mnemonic("code", *this, HEIGHT, 0,
-                          decltype(window_machine_code)::get_width())
+                          decltype(window_machine_code)::get_width(), il, core, memory)
         , window_tooltip("tooltips", *this, HEIGHT, 0,
                          decltype(window_machine_code)::get_width() +
-                             decltype(window_mnemonic)::get_width())
+                             decltype(window_mnemonic)::get_width(), il, core, memory)
         , window_core("status", *this, HEIGHT, 0,
                       decltype(window_machine_code)::get_width() +
                           decltype(window_mnemonic)::get_width() +
-                          decltype(window_tooltip)::get_width())
-        , memory(MEMORY_LOCATIONS) {
+                          decltype(window_tooltip)::get_width(), il, core, memory) {
     }
 
     void set_memory(const vector<Instruction> &m) {
@@ -220,13 +196,12 @@ public:
         copy(m.begin(), m.begin() + limit, memory.begin());
     }
 
-    void draw() {
+    void draw() const override {
         for (auto i :
-             vector<StatusDisplay *>{&window_machine_code, &window_mnemonic,
+             vector<const Window *>{&window_machine_code, &window_mnemonic,
                                      &window_tooltip, &window_core}) {
-            i->draw(il, core, memory);
+            i->draw();
         }
-        refresh();
     }
 
     void execute() {
@@ -236,6 +211,8 @@ public:
 
 private:
     const InstructionList &il;
+    Core core;
+    vector<Instruction> memory;
 
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
@@ -244,33 +221,6 @@ private:
     BoxedWindow<MnemonicWindow> window_mnemonic;
     BoxedWindow<TooltipWindow> window_tooltip;
     BoxedWindow<CoreCoreWindow> window_core;
-
-    Core core;
-    vector<Instruction> memory;
-};
-
-class Input {
-public:
-    enum class Type {
-        TICK,
-        KEY,
-    };
-
-    Input(Type type = Type::TICK, int value = 0)
-        : type(type)
-        , value(value) {
-    }
-
-    Type get_type() const {
-        return type;
-    }
-    int get_value() const {
-        return value;
-    }
-
-private:
-    Type type;
-    int value;
 };
 
 class OscReceiver : public osc::OscPacketListener {
@@ -301,104 +251,6 @@ protected:
 private:
     ThreadedQueue<Input> &tq;
 };
-
-class Editor;
-
-struct EditorCommand {
-    virtual void do_command(Editor &e) = 0;
-    virtual void undo_command(Editor &e) = 0;
-};
-
-class Editor {
-public:
-    Editor(const InstructionList &instruction_list)
-        : instruction_list(instruction_list)
-        , memory(32) {
-    }
-
-    void load_from_file(const string &fname) {
-        ifstream infile(fname);
-
-        auto index = 0;
-        for (string line; getline(infile, line);) {
-            if (!trim(line).empty()) {
-                memory[index++] = instruction_list.assemble(line);
-            }
-        }
-    }
-
-    void do_command(unique_ptr<EditorCommand> &&command) {
-        command->do_command(*this);
-        commands.push(move(command));
-    }
-
-    void undo_command() {
-        if (!commands.empty()) {
-            auto i = move(commands.front());
-            commands.pop();
-            i->undo_command(*this);
-        }
-    }
-
-    void sync_from_memory() {
-        transform(begin(memory), end(memory), begin(mnemonics),
-                  [this](auto i) { return instruction_list.disassemble(i); });
-    }
-
-    void sync_from_mnemonics() {
-        transform(begin(mnemonics), end(mnemonics), begin(memory),
-                  [this](auto i) { return instruction_list.assemble(i); });
-    }
-
-private:
-    const InstructionList &instruction_list;
-    queue<unique_ptr<EditorCommand>> commands;
-
-public:
-    vector<Instruction> memory;
-    vector<string> mnemonics;
-};
-
-//  Data required for do_command should be invariant/const
-//  somehow it should be fed to the constructor
-
-class InsertCommand : public EditorCommand {
-public:
-    InsertCommand(int character)
-        : character(character) {
-    }
-
-    void do_command(Editor &e) override {
-        //  go to (y, x) and insert the character
-    }
-
-    void undo_command(Editor &e) override {
-        //  go to (y, x) and remove the character
-    }
-
-private:
-    const int character;
-};
-
-class BackspaceCommand : public EditorCommand {
-public:
-    void do_command(Editor &e) override {
-        //  go to (y, x) and insert the character
-    }
-
-    void undo_command(Editor &e) override {
-        //  go to (y, x) and remove the character
-    }
-
-private:
-};
-
-//  input queue
-//  handles keyboard and osc input
-//  osc receipt is done on a different thread, which pushes messages to the
-//  queue on the main thread
-//  keyboard input is done on main thread, messages pushed to queue
-//  then, somewhere else, we can pull messages off the queue one at a time
 
 int main(int argc, char **argv) {
     auto clean_up = [] {
@@ -485,15 +337,14 @@ int main(int argc, char **argv) {
             endwin();
         };
 
-    auto threaded_draw_refresh = [&global_mutex, &cw] {
+    auto threaded_draw = [&global_mutex, &cw] {
         lock_guard<mutex> lock(global_mutex);
         cw.draw();
-        cw.refresh();
     };
 
     try {
-        cw.set_memory(editor.memory);
-        threaded_draw_refresh();
+        cw.set_memory(editor.get_memory());
+        threaded_draw();
 
         auto quit = false;
         while (!quit) {
@@ -529,7 +380,7 @@ int main(int argc, char **argv) {
 
             //  for the time being we assume that any input event will
             //  require a redraw
-            threaded_draw_refresh();
+            threaded_draw();
         }
 
         clean_up_threads();
