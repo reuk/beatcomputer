@@ -2,6 +2,10 @@
 
 using namespace std;
 
+void Window::Destructor::operator()(WINDOW *win) {
+    delwin(win);
+}
+
 Window::Window(int height, int width, int starty, int startx)
     : window(newwin(height, width, starty, startx)) {
 }

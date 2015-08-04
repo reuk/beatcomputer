@@ -16,7 +16,7 @@ InstructionManager::InstructionManager(int osc_out_port,
           make_shared<AND_R>(), make_shared<OR_R>(), make_shared<NOT_R>(),
           make_shared<MOVE_R>(),
           make_shared<OSC_R>(osc_out_port, osc_out_prefix, osc_out_address),
-          make_shared<RND>(),
+          make_shared<RND>(), make_shared<JUMP_R>(),
       })
     , op_instructions({
           make_shared<ADD_I>(), make_shared<SUB_I>(), make_shared<MUL_I>(),
@@ -24,7 +24,7 @@ InstructionManager::InstructionManager(int osc_out_port,
           make_shared<BNOT_I>(), make_shared<BXOR_I>(), make_shared<AND_I>(),
           make_shared<OR_I>(), make_shared<NOT_I>(), make_shared<MOVE_I>(),
           make_shared<OSC_I>(osc_out_port, osc_out_prefix, osc_out_address),
-          make_shared<LOAD>(), make_shared<SAVE>(), make_shared<JUMP>(),
+          make_shared<LOAD>(), make_shared<SAVE>(), make_shared<JUMP_I>(),
           make_shared<JE>(), make_shared<JNE>(), make_shared<JL>(),
           make_shared<JLE>(), make_shared<JG>(), make_shared<JGE>(),
       }) {

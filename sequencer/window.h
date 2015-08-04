@@ -7,11 +7,8 @@
 
 class Window {
 private:
-    struct Destructor {
-        inline void operator()(WINDOW *win) {
-            delwin(win);
-        }
-    };
+    struct Destructor { void operator()(WINDOW *win); };
+    std::unique_ptr<WINDOW, Destructor> window;
 
 public:
     Window(int height, int width, int starty, int startx);
@@ -35,7 +32,4 @@ public:
     virtual void draw() const = 0;
 
     operator WINDOW *();
-
-private:
-    std::unique_ptr<WINDOW, Destructor> window;
 };

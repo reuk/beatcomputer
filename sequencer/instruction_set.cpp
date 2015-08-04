@@ -101,7 +101,9 @@ I_INSTRUCTION_IMPLEMENTATION(OSC_I, "OSC", 0x0F,
                              send_osc(osc_out_port, osc_out_prefix,
                                       osc_out_address, rt, rs, im),
                              "OSC    a b c   -> send osc");
-J_INSTRUCTION_IMPLEMENTATION(JUMP, "JUMP", 0x12, core.ip = address,
+R_INSTRUCTION_IMPLEMENTATION(JUMP_R, "JUMP", 0x12, core.ip = rd,
+                             "JUMP   a       -> go to a");
+I_INSTRUCTION_IMPLEMENTATION(JUMP_I, "JUMP", 0x12, core.ip = im,
                              "JUMP   a       -> go to a");
 I_INSTRUCTION_IMPLEMENTATION(JE, "JE", 0x13, if (rs == rt) core.ip = im,
                              "JE     a b c   -> if a == b go to c");
@@ -273,4 +275,39 @@ OSC_I::OSC_I(int osc_out_port, const std::string &osc_out_prefix,
     : osc_out_port(osc_out_port)
     , osc_out_prefix(osc_out_prefix)
     , osc_out_address(osc_out_address) {
+}
+
+InstructionR JUMP_R::assemble_specific(const vector<string> &str) const {
+    if (str.size() != 1) {
+        throw runtime_error("JUMP takes one argument");
+    }
+    InstructionR r;
+    r.op = 0x0;
+    r.funct = get_id_code();
+    r.rd = parse_register(str[0]);
+    r.rs = 0;
+    r.rt = 0;
+    r.shamt = 0;
+    return r;
+}
+InstructionI JUMP_I::assemble_specific(const vector<string> &str) const {
+    if (str.size() != 1) {
+        throw runtime_error("JUMP takes one argument");
+    }
+    InstructionI r;
+    r.op = get_id_code();
+    r.immediate = parse_immediate(str[0]);
+    r.rs = 0;
+    r.rt = 0;
+    return r;
+}
+string JUMP_R::disassemble_specific(InstructionR instr) const {
+    std::stringstream ss;
+    ss << "R" << instr.rd;
+    return ss.str();
+}
+string JUMP_I::disassemble_specific(InstructionI instr) const {
+    std::stringstream ss;
+    ss << instr.immediate;
+    return ss.str();
 }

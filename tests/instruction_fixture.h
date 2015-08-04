@@ -115,7 +115,8 @@ class InstructionTest__OSC_I : public InstructionTest<OSC_I> {};
 
 class InstructionTest__LOAD : public InstructionTest<LOAD> {};
 class InstructionTest__SAVE : public InstructionTest<SAVE> {};
-class InstructionTest__JUMP : public InstructionTest<JUMP> {};
+class InstructionTest__JUMP_R : public InstructionTest<JUMP_R> {};
+class InstructionTest__JUMP_I : public InstructionTest<JUMP_I> {};
 class InstructionTest__JE : public InstructionTest<JE> {};
 class InstructionTest__JNE : public InstructionTest<JNE> {};
 class InstructionTest__JL : public InstructionTest<JL> {};

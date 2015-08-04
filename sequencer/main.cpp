@@ -25,27 +25,26 @@
 #include <bitset>
 #include <chrono>
 #include <thread>
+#include <regex>
 
 #include <unistd.h>
 
 using namespace std;
 
 bool validate_port(const char *flagname, int32_t value) {
-    if (value > 0 && value < 32768) {
-        return true;
-    }
-    cout << "Invalid value for --" << flagname << ": " << value << endl;
-    return false;
+    return 0 < value && value < 32768;
 }
 
 bool validate_prefix(const char *flagname, const string &prefix) {
-    //  TODO prefix validator
-    return true;
+    regex reg("/[a-zA-Z0-9]+");
+    smatch m;
+    return regex_match(prefix, m, reg);
 }
 
 bool validate_address(const char *flagname, const string &address) {
-    //  TODO address validator
-    return true;
+    regex reg("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b");
+    smatch m;
+    return regex_match(address, m, reg);
 }
 
 DEFINE_int32(i_port, 7000, "Port on which to receive OSC");
@@ -61,10 +60,6 @@ static const bool prefix_dummy =
     gflags::RegisterFlagValidator(&FLAGS_osc_prefix, &validate_prefix);
 static const bool address_dummy =
     gflags::RegisterFlagValidator(&FLAGS_osc_address, &validate_address);
-
-string machine_word(uint32_t word) {
-    return build_string(setfill('0'), setw(8), hex, word);
-}
 
 struct StatusDisplay {
     StatusDisplay(const InstructionList &il, const Core &core,
@@ -379,9 +374,14 @@ int main(int argc, char **argv) {
             clean_up();
         };
 
-    auto threaded_draw = [&global_mutex, &cw] {
+    auto y = 1;
+    auto x = 1;
+
+    auto threaded_draw = [&global_mutex, &cw, &y, &x] {
         lock_guard<mutex> lock(global_mutex);
         cw.draw();
+        move(y, x);
+        refresh();
     };
 
     try {
@@ -401,18 +401,24 @@ int main(int argc, char **argv) {
                 case Input::Type::KEY:
                     auto key = popped.get_value();
 
-                    if (key < 127) {
+                    if (key == KEY_RIGHT) {
+                        x += 1;
+                    } else if (key == KEY_LEFT) {
+                        x -= 1;
+                    } else if (key == KEY_DOWN) {
+                        y += 1;
+                    } else if (key == KEY_UP) {
+                        y -= 1;
+                    } else if (key == KEY_BACKSPACE) {
+                        editor.do_command(make_unique<BackspaceCommand>());
+                    } else if (key < 127) {
                         // int y, x;
                         // getyx(stdscr, y, x);
                         editor.do_command(make_unique<InsertCommand>(key));
                     }
 
-                    if (key == KEY_BACKSPACE) {
-                        editor.do_command(make_unique<BackspaceCommand>());
-                    }
-
                     /*
-                    if (key == UNDO) {
+                       else if (key == UNDO) {
                         editor.undo_command();
                     }
                     */

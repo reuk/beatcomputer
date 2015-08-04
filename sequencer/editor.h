@@ -3,8 +3,9 @@
 #include "instruction_list.h"
 #include "instructions.h"
 #include "editor_command.h"
+#include "text_editor.h"
 
-#include <queue>
+#include <list>
 #include <string>
 
 class Editor {
@@ -16,16 +17,34 @@ public:
     void do_command(std::unique_ptr<EditorCommand> &&command);
     void undo_command();
     void redo_command();
+
     void sync_from_memory();
     void sync_from_mnemonics();
+    void sync();
 
     std::vector<Instruction> get_memory() const;
     std::vector<std::string> get_mnemonics() const;
 
+    enum class Field {
+        MEMORY,
+        MNEMONICS
+    };
+
+    TextEditor & selected_editor();
+
+    Field get_selected() const;
+    void set_selected(Field field);
+
 private:
     const InstructionList &instruction_list;
-    std::queue<std::unique_ptr<EditorCommand>> commands;
+    std::vector<std::unique_ptr<EditorCommand>> commands;
+    int head;
+
+    Field selected;
 
 public:
-    std::vector<std::pair<Instruction, std::string>> store;
+    TextEditor memory;
+    TextEditor mnemonics;
 };
+
+std::string machine_word(uint32_t word);
