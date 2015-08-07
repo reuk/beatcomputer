@@ -26,6 +26,8 @@
 #include <chrono>
 #include <thread>
 #include <regex>
+#include <atomic>
+#include <condition_variable>
 
 #include <unistd.h>
 
@@ -292,7 +294,7 @@ protected:
                 }
             } else if (m.AddressPattern() == string("/key_server")) {
                 osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
-                int key;
+                osc::int32 key;
                 args >> key >> osc::EndMessage;
 
                 tq.push(Input(Input::Type::KEY, key));

@@ -7,17 +7,18 @@ if(APPLE)
     link_directories(/usr/local/lib)
 elseif(UNIX)
     include_directories(/usr/include/oscpack)
+    set(libraries pthread)
 endif()
 
 set(name beatcomputer)
 file(GLOB lib_sources "*.cpp")
 
-find_package(gflags REQUIRED)
+#find_package(gflags REQUIRED)
 
 add_library(${name}_common ${lib_sources})
 target_link_libraries(${name}_common oscpack)
 
-set(libraries ncurses oscpack gflags)
+set(libraries ${libraries} ncurses oscpack gflags)
 add_executable(${name} main.cpp)
 
 target_link_libraries(${name} ${name}_common ${libraries})
