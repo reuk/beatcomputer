@@ -20,20 +20,26 @@ Window &Window::operator=(Window &&rhs) noexcept = default;
 int Window::refresh() const {
     return wrefresh(window.get());
 }
+int Window::noutrefresh() const {
+    return wnoutrefresh(window.get());
+}
 int Window::erase() const {
     return werase(window.get());
 }
 int Window::box(int v, int h) const {
     return ::box(window.get(), v, h);
 }
-int Window::move(int v, int h) const {
-    return mvwin(window.get(), v, h);
-}
 int Window::print(int v, int h, const string &s) const {
     return mvwaddstr(window.get(), v, h, s.c_str());
 }
 int Window::resize(int v, int h) const {
     return wresize(window.get(), v, h);
+}
+int Window::w_addch(const chtype ch) const {
+    return waddch(window.get(), ch);
+}
+int Window::w_move(int y, int x) const {
+    return wmove(window.get(), y, x);
 }
 
 int Window::w_attron(int attr) const {

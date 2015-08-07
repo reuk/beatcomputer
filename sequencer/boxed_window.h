@@ -19,13 +19,11 @@ public:
         refresh();
     }
 
-    void draw() const override {
-        contents.draw();
-    }
-
     static int get_width() {
         return 2 + T::get_width();
     }
+
+    T & get_contents() {return contents;}
 
 private:
     T contents;

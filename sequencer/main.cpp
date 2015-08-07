@@ -42,7 +42,9 @@ bool validate_prefix(const char *flagname, const string &prefix) {
 }
 
 bool validate_address(const char *flagname, const string &address) {
-    regex reg("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b");
+    regex reg(
+        "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4]"
+        "[0-9]|[01]?[0-9][0-9]?)\\b");
     smatch m;
     return regex_match(address, m, reg);
 }
@@ -73,29 +75,33 @@ struct StatusDisplay {
     const vector<Instruction> &memory;
 };
 
-class MachineCodeWindow : public Window, public StatusDisplay {
+class ContentWindow : public Window, public StatusDisplay, public TextEditorListener {
 public:
-    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx,
-                      const InstructionList &il, const Core &core,
-                      const vector<Instruction> &memory)
-        : Window(parent, height, get_width(), starty, startx)
+    ContentWindow(WINDOW *parent, int height, int width, int starty, int startx,
+                  const InstructionList &il, const Core &core,
+                  const vector<Instruction> &memory)
+        : Window(parent, height, width, starty, startx)
         , StatusDisplay(il, core, memory) {
     }
 
-    void draw() const override {
-        erase();
-
-        for (auto i = 0; i != memory.size(); ++i) {
-            auto attr = i == core.ip;
-
-            if (attr)
-                w_attron(A_BOLD | COLOR_PAIR(1));
-            print(i, 0, machine_word(memory[i].raw));
-            if (attr)
-                w_attroff(A_BOLD | COLOR_PAIR(1));
-        }
-
+    void cursor_moved(int y, int x) override {
+        Logger::log("cursor moved to: ", y, ", ", x);
+        w_move(y, x);
         refresh();
+    }
+
+    void character_added(char character) override {
+        w_addch(character);
+        refresh();
+    }
+};
+
+class MachineCodeWindow : public ContentWindow {
+public:
+    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx,
+                  const InstructionList &il, const Core &core,
+                  const vector<Instruction> &memory)
+        : ContentWindow(parent, height, get_width(), starty, startx, il, core, memory) {
     }
 
     static int get_width() {
@@ -103,32 +109,12 @@ public:
     }
 };
 
-class MnemonicWindow : public Window, public StatusDisplay {
+class MnemonicWindow : public ContentWindow {
 public:
     MnemonicWindow(WINDOW *parent, int height, int starty, int startx,
-                   const InstructionList &il, const Core &core,
-                   const vector<Instruction> &memory)
-        : Window(parent, height, get_width(), starty, startx)
-        , StatusDisplay(il, core, memory) {
-    }
-
-    void draw() const override {
-        erase();
-
-        auto line = 0;
-        for (const auto &i : memory) {
-            auto attr = line == core.ip;
-
-            if (attr)
-                w_attron(A_BOLD | COLOR_PAIR(1));
-            print(line, 0, il.disassemble(i));
-            if (attr)
-                w_attroff(A_BOLD | COLOR_PAIR(1));
-
-            line += 1;
-        }
-
-        refresh();
+                  const InstructionList &il, const Core &core,
+                  const vector<Instruction> &memory)
+        : ContentWindow(parent, height, get_width(), starty, startx, il, core, memory) {
     }
 
     static int get_width() {
@@ -145,7 +131,10 @@ public:
         , StatusDisplay(il, core, memory) {
     }
 
-    void draw() const override {
+    void draw() const {
+        int y, x;
+        getsyx(y, x);
+
         erase();
 
         auto line = 0;
@@ -161,7 +150,9 @@ public:
             line += 1;
         }
 
-        refresh();
+        noutrefresh();
+
+        setsyx(y, x);
     }
 
     static int get_width() {
@@ -178,7 +169,10 @@ public:
         , StatusDisplay(il, core, memory) {
     }
 
-    void draw() const override {
+    void draw() const {
+        int y, x;
+        getsyx(y, x);
+
         erase();
 
         auto line = 0;
@@ -196,7 +190,9 @@ public:
         print_register("SP", core.sp);
         print_register("IP", core.ip);
 
-        refresh();
+        noutrefresh();
+
+        setsyx(y, x);
     }
 
     static int get_width() {
@@ -215,10 +211,10 @@ public:
                  starty, startx)
         , il(il)
         , memory(MEMORY_LOCATIONS)
+        , editor(il)
         , window_machine_code("ram", *this, HEIGHT, 0, 0, il, core, memory)
         , window_mnemonic("code", *this, HEIGHT, 0,
-                          decltype(window_machine_code)::get_width(), il, core,
-                          memory)
+                          decltype(window_machine_code)::get_width(), il, core, memory)
         , window_tooltip("tooltips", *this, HEIGHT, 0,
                          decltype(window_machine_code)::get_width() +
                              decltype(window_mnemonic)::get_width(),
@@ -228,6 +224,8 @@ public:
                           decltype(window_mnemonic)::get_width() +
                           decltype(window_tooltip)::get_width(),
                       il, core, memory) {
+        editor.memory.add_listener(&window_machine_code.get_contents());
+        editor.mnemonics.add_listener(&window_mnemonic.get_contents());
     }
 
     void set_memory(const vector<Instruction> &m) {
@@ -235,17 +233,27 @@ public:
         copy(m.begin(), m.begin() + limit, memory.begin());
     }
 
-    void draw() const override {
-        for (auto i :
-             vector<const Window *>{&window_machine_code, &window_mnemonic,
-                                    &window_tooltip, &window_core}) {
-            i->draw();
-        }
-    }
-
     void execute() {
         il.execute(core, memory);
         core.ip = core.ip % MEMORY_LOCATIONS;
+
+        update_displays();
+    }
+
+    void update_displays() {
+        window_tooltip.get_contents().draw();
+        window_core.get_contents().draw();
+
+        doupdate();
+    }
+
+    void load_from_file(const string & fname) {
+        editor.load_from_file(fname);
+        set_memory(editor.get_memory());
+
+        window_mnemonic.get_contents().cursor_moved(0, 0);
+
+        update_displays();
     }
 
 private:
@@ -255,7 +263,9 @@ private:
 
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
-
+public:
+    Editor editor;
+private:
     BoxedWindow<MachineCodeWindow> window_machine_code;
     BoxedWindow<MnemonicWindow> window_mnemonic;
     BoxedWindow<TooltipWindow> window_tooltip;
@@ -298,13 +308,6 @@ private:
     ThreadedQueue<Input> &tq;
 };
 
-void clean_up() {
-    echo();
-    keypad(stdscr, 0);
-    nocbreak();
-    endwin();
-}
-
 int main(int argc, char **argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -316,8 +319,6 @@ int main(int argc, char **argv) {
 
     InstructionList instruction_list(
         InstructionManager(FLAGS_o_port, FLAGS_osc_prefix, FLAGS_osc_address));
-    Editor editor(instruction_list);
-    editor.load_from_file(argv[1]);
 
     initscr();
     start_color();
@@ -327,6 +328,7 @@ int main(int argc, char **argv) {
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
 
     CoreWindow cw(stdscr, instruction_list, 0, 0);
+    cw.load_from_file(argv[1]);
 
     mutex global_mutex;
 
@@ -371,23 +373,13 @@ int main(int argc, char **argv) {
             run_keyboard_thread = false;
             keyboard_thread.join();
 
-            clean_up();
+            echo();
+            keypad(stdscr, 0);
+            nocbreak();
+            endwin();
         };
 
-    auto y = 1;
-    auto x = 1;
-
-    auto threaded_draw = [&global_mutex, &cw, &y, &x] {
-        lock_guard<mutex> lock(global_mutex);
-        cw.draw();
-        move(y, x);
-        refresh();
-    };
-
     try {
-        cw.set_memory(editor.get_memory());
-        threaded_draw();
-
         auto quit = false;
         while (!quit) {
             Input popped;
@@ -395,40 +387,36 @@ int main(int argc, char **argv) {
 
             switch (popped.get_type()) {
                 case Input::Type::TICK:
-                    cw.execute();
+                    {
+                        lock_guard<mutex> lock(global_mutex);
+                        cw.execute();
+                    }
                     break;
 
                 case Input::Type::KEY:
                     auto key = popped.get_value();
 
+                    unique_ptr<EditorCommand> command;
+
                     if (key == KEY_RIGHT) {
-                        x += 1;
+                        command = make_unique<MoveCommand>(Direction::RIGHT);
                     } else if (key == KEY_LEFT) {
-                        x -= 1;
+                        command = make_unique<MoveCommand>(Direction::LEFT);
                     } else if (key == KEY_DOWN) {
-                        y += 1;
+                        command = make_unique<MoveCommand>(Direction::DOWN);
                     } else if (key == KEY_UP) {
-                        y -= 1;
-                    } else if (key == KEY_BACKSPACE) {
-                        editor.do_command(make_unique<BackspaceCommand>());
+                        command = make_unique<MoveCommand>(Direction::UP);
                     } else if (key < 127) {
-                        // int y, x;
-                        // getyx(stdscr, y, x);
-                        editor.do_command(make_unique<InsertCommand>(key));
+                        command = make_unique<InsertCommand>(key);
                     }
 
-                    /*
-                       else if (key == UNDO) {
-                        editor.undo_command();
+                    {
+                        lock_guard<mutex> lock(global_mutex);
+                        cw.editor.do_command(move(command));
                     }
-                    */
 
                     break;
             }
-
-            //  for the time being we assume that any input event will
-            //  require a redraw
-            threaded_draw();
         }
 
         clean_up_threads();

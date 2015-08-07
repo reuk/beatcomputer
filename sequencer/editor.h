@@ -25,16 +25,13 @@ public:
     std::vector<Instruction> get_memory() const;
     std::vector<std::string> get_mnemonics() const;
 
-    enum class Field {
-        MEMORY,
-        MNEMONICS
-    };
-
-    TextEditor & selected_editor();
+    enum class Field { MEMORY, MNEMONICS };
 
     Field get_selected() const;
     void set_selected(Field field);
 
+    TextEditor &get_editor(Field field);
+    TextEditor &selected_editor();
 private:
     const InstructionList &instruction_list;
     std::vector<std::unique_ptr<EditorCommand>> commands;

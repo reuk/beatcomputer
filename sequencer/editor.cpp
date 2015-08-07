@@ -19,9 +19,7 @@ Editor::Editor(const InstructionList &instruction_list)
 
 void Editor::load_from_file(const string &fname) {
     mnemonics.load_from_file(fname);
-    Logger::log("loaded from file");
     sync_from_mnemonics();
-    Logger::log("synced");
 }
 
 void Editor::do_command(unique_ptr<EditorCommand> &&command) {
@@ -39,7 +37,7 @@ void Editor::do_command(unique_ptr<EditorCommand> &&command) {
 void Editor::undo_command() {
     if (head != commands.size()) {
         head += 1;
-        auto & i = *(commands.end() - head);
+        auto &i = *(commands.end() - head);
         i->undo_command(*this);
     }
 
@@ -49,7 +47,7 @@ void Editor::undo_command() {
 void Editor::redo_command() {
     if (head != 0) {
         head -= 1;
-        auto & i = *(commands.end() - head);
+        auto &i = *(commands.end() - head);
         i->do_command(*this);
     }
 
@@ -70,27 +68,26 @@ void Editor::sync() {
 void Editor::sync_from_memory() {
     auto memory_contents = get_memory();
     vector<string> ret(memory_contents.size());
-    transform(begin(memory_contents), end(memory_contents), begin(ret), [this](auto i) {
-                return instruction_list.disassemble(i);
-            });
+    transform(begin(memory_contents), end(memory_contents), begin(ret),
+              [this](auto i) { return instruction_list.disassemble(i); });
     mnemonics.set_contents(ret);
 }
 
 void Editor::sync_from_mnemonics() {
     auto mnemonics_contents = get_mnemonics();
     vector<string> ret(mnemonics_contents.size());
-    transform(begin(mnemonics_contents), end(mnemonics_contents), begin(ret), [this](auto i) {
-                return machine_word(instruction_list.assemble(i).raw);
-            });
+    transform(begin(mnemonics_contents), end(mnemonics_contents), begin(ret),
+              [this](auto i) {
+                  return machine_word(instruction_list.assemble(i).raw);
+              });
     memory.set_contents(ret);
 }
 
 vector<Instruction> Editor::get_memory() const {
     auto memory_contents = memory.get_contents();
     vector<Instruction> ret(memory_contents.size());
-    transform(begin(memory_contents), end(memory_contents), begin(ret), [](auto i) {
-                return stol(i, 0, 16);
-            });
+    transform(begin(memory_contents), end(memory_contents), begin(ret),
+              [](auto i) { return stol(i, 0, 16); });
     return ret;
 }
 
@@ -106,8 +103,12 @@ void Editor::set_selected(Field field) {
     selected = field;
 }
 
-TextEditor & Editor::selected_editor() {
-    switch (get_selected()) {
+TextEditor &Editor::selected_editor() {
+    return get_editor(get_selected());
+}
+
+TextEditor &Editor::get_editor(Field field) {
+    switch (field) {
         case Field::MEMORY:
             return memory;
         case Field::MNEMONICS:
