@@ -15,8 +15,8 @@ string machine_word(uint32_t word) {
 
 Editor::Editor(const InstructionList &instruction_list)
     : instruction_list(instruction_list)
-    , selected(Field::MNEMONICS)
-    , head(0) {
+    , head(0)
+    , selected(Field::MNEMONICS) {
 }
 
 void Editor::load_from_file(const string &fname) {
@@ -32,8 +32,6 @@ void Editor::do_command(unique_ptr<EditorCommand> &&command) {
     command->do_command(*this);
     commands.push_back(move(command));
     head = 0;
-
-    sync();
 }
 
 void Editor::undo_command() {
@@ -42,8 +40,6 @@ void Editor::undo_command() {
         auto &i = *(commands.end() - head);
         i->undo_command(*this);
     }
-
-    sync();
 }
 
 void Editor::redo_command() {
@@ -52,8 +48,6 @@ void Editor::redo_command() {
         auto &i = *(commands.end() - head);
         i->do_command(*this);
     }
-
-    sync();
 }
 
 void Editor::sync() {
@@ -117,4 +111,6 @@ TextEditor &Editor::get_editor(Field field) {
         case Field::MNEMONICS:
             return mnemonics;
     }
+
+    throw runtime_error("no such editor field");
 }

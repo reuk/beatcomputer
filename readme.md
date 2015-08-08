@@ -4,12 +4,6 @@ Assembly Live Coding Machine
 Todo
 ----
 
-* json config
-    * host
-    * port
-    * osc prefix
-        * change routing of OSC somehow
-
 * ncurses mode needs an editor
 
 * finish writing unit tests!
@@ -21,6 +15,10 @@ Todo
     * linting
     * static analysis `scan-build`
     * fuzzing? `afl-fuzz`
+
+* display memory in editor
+
+* some 'execute' callback handler that changes highlighted row
 
 Done
 ----

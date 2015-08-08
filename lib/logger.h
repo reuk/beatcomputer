@@ -53,11 +53,11 @@ private:
 
     template <typename... Ts>
     static std::string get_string(Ts &&... ts) {
+        std::stringstream ss;
+#ifdef __APPLE__
         auto t0 = std::chrono::system_clock::to_time_t(
             std::chrono::system_clock::now());
         auto t1 = localtime(&t0);
-        std::stringstream ss;
-#ifdef __APPLE__
         ss << std::put_time(t1, "%a %b %d %H:%M:%S %Y") << ": ";
 #endif
         ss << build_string(ts...) << std::endl;

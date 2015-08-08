@@ -27,11 +27,13 @@ public:
     virtual int box(int v, int h) const;
     virtual int print(int v, int h, const std::string &s) const;
     virtual int resize(int v, int h) const;
+    virtual int touch() const;
 
     virtual int w_addch(const chtype ch) const;
     virtual int w_move(int y, int x) const;
     virtual int w_attron(int attr) const;
     virtual int w_attroff(int attr) const;
+    virtual int w_mvchgat(int y, int x, int n, attr_t attr, short color) const;
 
     operator WINDOW *();
 };

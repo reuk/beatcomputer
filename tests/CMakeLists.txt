@@ -5,7 +5,7 @@ project(tests)
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wall -std=c++1y")
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/sequencer
+    ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/gtest/include
 )
 link_directories(/usr/local/lib)

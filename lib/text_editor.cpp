@@ -57,7 +57,7 @@ void TextEditor::move_cursor(Direction direction) {
             break;
     }
 
-    cursor.x = clamp(cursor.x, 0, contents[cursor.y].size());
+    cursor.x = clamp(cursor.x, 0, contents[cursor.y].size() - 1);
 
     call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }

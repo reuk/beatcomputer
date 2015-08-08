@@ -1,6 +1,10 @@
 #include "editor_command.h"
 #include "editor.h"
 
+#include <stdexcept>
+
+using namespace std;
+
 void EditorCommand::do_command(Editor &e) {}
 void EditorCommand::undo_command(Editor &e) {}
 
@@ -9,15 +13,19 @@ InsertCommand::InsertCommand(char character)
 }
 
 void InsertCommand::do_command(Editor &e) {
+    e.sync();
 }
 
 void InsertCommand::undo_command(Editor &e) {
+    e.sync();
 }
 
 void BackspaceCommand::do_command(Editor &e) {
+    e.sync();
 }
 
 void BackspaceCommand::undo_command(Editor &e) {
+    e.sync();
 }
 
 MoveCommand::MoveCommand(Direction direction)
@@ -39,6 +47,8 @@ Direction opposite(Direction direction) {
         case Direction::DOWN:
             return Direction::UP;
     }
+
+    throw runtime_error("no such direction");
 }
 
 void MoveCommand::undo_command(Editor &e) {

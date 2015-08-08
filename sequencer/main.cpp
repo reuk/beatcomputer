@@ -77,7 +77,28 @@ struct StatusDisplay {
     const vector<Instruction> &memory;
 };
 
-class ContentWindow : public Window, public StatusDisplay, public TextEditorListener {
+struct CursorStorage {
+    CursorStorage(const Window & w): w(w) {
+        getsyx(y, x);
+    }
+
+    ~CursorStorage() {
+        w.noutrefresh();
+        setsyx(y, x);
+    }
+
+private:
+    const Window & w;
+    int y, x;
+};
+
+#define STORE_CURSOR CursorStorage sl_##__COUNTER__(*this);
+
+struct TickListener {
+    virtual void tick(int ip) = 0;
+};
+
+class ContentWindow : public Window, public StatusDisplay, public TextEditorListener, public TickListener {
 public:
     ContentWindow(WINDOW *parent, int height, int width, int starty, int startx,
                   const InstructionList &il, const Core &core,
@@ -95,6 +116,18 @@ public:
     void character_added(char character) override {
         w_addch(character);
         refresh();
+    }
+
+    void tick(int line) override {
+        STORE_CURSOR;
+
+        for (auto i = 0; i != memory.size(); ++i) {
+            w_mvchgat(core.ip, 0, -1, WA_NORMAL, 0);
+        }
+
+        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
+
+        touch();
     }
 };
 
@@ -124,7 +157,7 @@ public:
     }
 };
 
-class TooltipWindow : public Window, public StatusDisplay {
+class TooltipWindow : public Window, public StatusDisplay, public TickListener {
 public:
     TooltipWindow(WINDOW *parent, int height, int starty, int startx,
                   const InstructionList &il, const Core &core,
@@ -134,27 +167,28 @@ public:
     }
 
     void draw() const {
-        int y, x;
-        getsyx(y, x);
+        STORE_CURSOR;
 
         erase();
 
         auto line = 0;
-        for (const auto &i : memory) {
-            auto attr = line == core.ip;
-
-            if (attr)
-                w_attron(A_BOLD | COLOR_PAIR(1));
-            print(line, 0, il.tooltip(i));
-            if (attr)
-                w_attroff(A_BOLD | COLOR_PAIR(1));
-
-            line += 1;
+        for(auto i : memory) {
+            print(line++, 0, il.tooltip(i));
         }
 
-        noutrefresh();
+        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
+    }
 
-        setsyx(y, x);
+    void tick(int line) override {
+        STORE_CURSOR;
+
+        for (auto i = 0; i != memory.size(); ++i) {
+            w_mvchgat(core.ip, 0, -1, WA_NORMAL, 0);
+        }
+
+        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
+
+        touch();
     }
 
     static int get_width() {
@@ -162,7 +196,7 @@ public:
     }
 };
 
-class CoreCoreWindow : public Window, public StatusDisplay {
+class CoreCoreWindow : public Window, public StatusDisplay, public TickListener {
 public:
     CoreCoreWindow(WINDOW *parent, int height, int starty, int startx,
                    const InstructionList &il, const Core &core,
@@ -171,9 +205,8 @@ public:
         , StatusDisplay(il, core, memory) {
     }
 
-    void draw() const {
-        int y, x;
-        getsyx(y, x);
+    void tick(int ip) override {
+        STORE_CURSOR;
 
         erase();
 
@@ -191,10 +224,6 @@ public:
 
         print_register("SP", core.sp);
         print_register("IP", core.ip);
-
-        noutrefresh();
-
-        setsyx(y, x);
     }
 
     static int get_width() {
@@ -202,7 +231,7 @@ public:
     }
 };
 
-class CoreWindow : public Window {
+class CoreWindow : public Window, public ListenerList<TickListener> {
 public:
     CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
                int startx)
@@ -228,6 +257,11 @@ public:
                       il, core, memory) {
         editor.memory.add_listener(&window_machine_code.get_contents());
         editor.mnemonics.add_listener(&window_mnemonic.get_contents());
+
+        add_listener(&window_machine_code.get_contents());
+        add_listener(&window_mnemonic.get_contents());
+        add_listener(&window_tooltip.get_contents());
+        add_listener(&window_core.get_contents());
     }
 
     void set_memory(const vector<Instruction> &m) {
@@ -239,13 +273,7 @@ public:
         il.execute(core, memory);
         core.ip = core.ip % MEMORY_LOCATIONS;
 
-        update_displays();
-    }
-
-    void update_displays() {
-        window_tooltip.get_contents().draw();
-        window_core.get_contents().draw();
-
+        call(&TickListener::tick, core.ip);
         doupdate();
     }
 
@@ -255,7 +283,9 @@ public:
 
         window_mnemonic.get_contents().cursor_moved(0, 0);
 
-        update_displays();
+        window_tooltip.get_contents().draw();
+        call(&TickListener::tick, 0);
+        doupdate();
     }
 
 private:

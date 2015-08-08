@@ -41,12 +41,18 @@ int Window::w_addch(const chtype ch) const {
 int Window::w_move(int y, int x) const {
     return wmove(window.get(), y, x);
 }
+int Window::touch() const {
+    return touchwin(window.get());
+}
 
 int Window::w_attron(int attr) const {
     return wattron(window.get(), attr);
 }
 int Window::w_attroff(int attr) const {
     return wattroff(window.get(), attr);
+}
+int Window::w_mvchgat(int y, int x, int n, attr_t attr, short color) const {
+    return mvwchgat(window.get(), y, x, n, attr, color, nullptr);
 }
 
 Window::operator WINDOW *() {

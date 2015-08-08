@@ -7,12 +7,9 @@ if(APPLE)
     link_directories(/usr/local/lib)
 elseif(UNIX)
     include_directories(/usr/include/oscpack)
-    set(libraries pthread)
 endif()
-
-include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 file(GLOB sources "*.cpp")
 
-add_executable(beatcomputer ${sources})
-target_link_libraries(beatcomputer ${libraries} beatcomputer_common ncurses oscpack gflags)
+add_library(beatcomputer_common ${sources})
+target_link_libraries(beatcomputer_common oscpack)
