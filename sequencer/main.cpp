@@ -408,7 +408,9 @@ int main(int argc, char **argv) {
                         command = make_unique<MoveCommand>(Direction::DOWN);
                     } else if (key == KEY_UP) {
                         command = make_unique<MoveCommand>(Direction::UP);
-                    } else if (key < 127) {
+                    } else if (key == '\t') {
+                        command = make_unique<SelectCommand>();
+                    } else if (isalnum(key)) {
                         command = make_unique<InsertCommand>(key);
                     }
 

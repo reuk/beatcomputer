@@ -44,3 +44,25 @@ Direction opposite(Direction direction) {
 void MoveCommand::undo_command(Editor &e) {
     e.selected_editor().move_cursor(opposite(direction));
 }
+
+void SelectCommand::do_command(Editor &e) {
+    switch (e.get_selected()) {
+        case Editor::Field::MEMORY:
+            e.set_selected(Editor::Field::MNEMONICS);
+            break;
+        case Editor::Field::MNEMONICS:
+            e.set_selected(Editor::Field::MEMORY);
+            break;
+    }
+}
+
+void SelectCommand::undo_command(Editor &e) {
+    switch (e.get_selected()) {
+        case Editor::Field::MEMORY:
+            e.set_selected(Editor::Field::MNEMONICS);
+            break;
+        case Editor::Field::MNEMONICS:
+            e.set_selected(Editor::Field::MEMORY);
+            break;
+    }
+}

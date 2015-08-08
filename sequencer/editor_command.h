@@ -35,3 +35,9 @@ public:
 private:
     Direction direction;
 };
+
+class SelectCommand : public EditorCommand {
+public:
+    void do_command(Editor &e) override;
+    void undo_command(Editor &e) override;
+};

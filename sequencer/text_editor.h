@@ -24,6 +24,7 @@ public:
     void insert_character(char character);
     void backspace();
     void del();
+    void select() const;
 
     const std::vector<std::string> & get_contents() const;
     void set_contents(const std::vector<std::string> & in);

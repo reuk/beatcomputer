@@ -35,10 +35,8 @@ public:
 private:
     const InstructionList &instruction_list;
     std::vector<std::unique_ptr<EditorCommand>> commands;
-    int head;
-
     Field selected;
-
+    int head;
 public:
     TextEditor memory;
     TextEditor mnemonics;

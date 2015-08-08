@@ -62,6 +62,10 @@ void TextEditor::move_cursor(Direction direction) {
     call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }
 
+void TextEditor::select() const {
+    call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
+}
+
 void TextEditor::insert_character(char character) {
     if (character == '\n') {
         split_line();

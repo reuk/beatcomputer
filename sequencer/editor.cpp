@@ -103,6 +103,7 @@ Editor::Field Editor::get_selected() const {
 
 void Editor::set_selected(Field field) {
     selected = field;
+    selected_editor().select();
 }
 
 TextEditor &Editor::selected_editor() {
