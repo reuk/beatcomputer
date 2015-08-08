@@ -5,8 +5,8 @@ enum class Direction { UP, DOWN, LEFT, RIGHT };
 class Editor;
 
 struct EditorCommand {
-    virtual void do_command(Editor &e) = 0;
-    virtual void undo_command(Editor &e) = 0;
+    virtual void do_command(Editor &e);
+    virtual void undo_command(Editor &e);
 };
 
 //  Data required for do_command should be invariant/const

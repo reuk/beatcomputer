@@ -15,7 +15,8 @@ string machine_word(uint32_t word) {
 
 Editor::Editor(const InstructionList &instruction_list)
     : instruction_list(instruction_list)
-    , selected(Field::MNEMONICS) {
+    , selected(Field::MNEMONICS)
+    , head(0) {
 }
 
 void Editor::load_from_file(const string &fname) {

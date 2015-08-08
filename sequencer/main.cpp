@@ -398,7 +398,7 @@ int main(int argc, char **argv) {
                 case Input::Type::KEY:
                     auto key = popped.get_value();
 
-                    unique_ptr<EditorCommand> command;
+                    unique_ptr<EditorCommand> command = make_unique<EditorCommand>();
 
                     if (key == KEY_RIGHT) {
                         command = make_unique<MoveCommand>(Direction::RIGHT);

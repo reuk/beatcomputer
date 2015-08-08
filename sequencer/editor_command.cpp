@@ -1,6 +1,9 @@
 #include "editor_command.h"
 #include "editor.h"
 
+void EditorCommand::do_command(Editor &e) {}
+void EditorCommand::undo_command(Editor &e) {}
+
 InsertCommand::InsertCommand(char character)
     : character(character) {
 }
