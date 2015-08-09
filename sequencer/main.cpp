@@ -122,7 +122,7 @@ public:
         STORE_CURSOR;
 
         for (auto i = 0; i != memory.size(); ++i) {
-            w_mvchgat(core.ip, 0, -1, WA_NORMAL, 0);
+            w_mvchgat(i, 0, -1, WA_NORMAL, 0);
         }
 
         w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
@@ -183,7 +183,7 @@ public:
         STORE_CURSOR;
 
         for (auto i = 0; i != memory.size(); ++i) {
-            w_mvchgat(core.ip, 0, -1, WA_NORMAL, 0);
+            w_mvchgat(i, 0, -1, WA_NORMAL, 0);
         }
 
         w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
