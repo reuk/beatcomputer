@@ -105,9 +105,7 @@ string InstructionList::tooltip(Instruction instr) const {
 void InstructionList::execute(Core & core, vector<Instruction> & memory) const {
     auto instr = memory[core.ip];
     descriptor_for_instruction(instr)->execute(core, memory, instr);
-
-    if (get_op_type(instr.r.op) != OpType::J)
-        core.ip += 1;
+    core.ip += 1;
 }
 
 std::map<std::string, std::vector<std::shared_ptr<InstructionDescriptor>>>

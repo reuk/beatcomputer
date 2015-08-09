@@ -95,7 +95,7 @@ private:
 #define STORE_CURSOR CursorStorage sl_##__COUNTER__(*this);
 
 struct TickListener {
-    virtual void tick(int ip) = 0;
+    virtual void tick(int prev, int ip) = 0;
 };
 
 class ContentWindow : public Window, public StatusDisplay, public TextEditorListener, public TickListener {
@@ -118,14 +118,11 @@ public:
         refresh();
     }
 
-    void tick(int line) override {
+    void tick(int prev, int line) override {
         STORE_CURSOR;
 
-        for (auto i = 0; i != memory.size(); ++i) {
-            w_mvchgat(i, 0, -1, WA_NORMAL, 0);
-        }
-
-        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
+        w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
+        w_mvchgat(line, 0, -1, WA_BOLD, 1);
 
         touch();
     }
@@ -179,14 +176,11 @@ public:
         w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
     }
 
-    void tick(int line) override {
+    void tick(int prev, int line) override {
         STORE_CURSOR;
 
-        for (auto i = 0; i != memory.size(); ++i) {
-            w_mvchgat(i, 0, -1, WA_NORMAL, 0);
-        }
-
-        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
+        w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
+        w_mvchgat(line, 0, -1, WA_BOLD, 1);
 
         touch();
     }
@@ -205,7 +199,7 @@ public:
         , StatusDisplay(il, core, memory) {
     }
 
-    void tick(int ip) override {
+    void tick(int, int) override {
         STORE_CURSOR;
 
         erase();
@@ -270,10 +264,13 @@ public:
     }
 
     void execute() {
+        auto prev = core.ip;
+
         il.execute(core, memory);
+
         core.ip = core.ip % MEMORY_LOCATIONS;
 
-        call(&TickListener::tick, core.ip);
+        call(&TickListener::tick, prev, core.ip);
         doupdate();
     }
 
@@ -284,7 +281,7 @@ public:
         window_mnemonic.get_contents().cursor_moved(0, 0);
 
         window_tooltip.get_contents().draw();
-        call(&TickListener::tick, 0);
+        call(&TickListener::tick, 0, 0);
         doupdate();
     }
 

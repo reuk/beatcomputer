@@ -18,13 +18,6 @@
         std::string get_tooltip() const override;                             \
     };
 
-#define J_INSTRUCTION_DEFINITION(Name, Id)                                    \
-    struct Name : JInstructionDescriptor<Id> {                                \
-        void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              int32_t address) const override;                \
-        std::string get_tooltip() const override;                             \
-    };
-
 #define R_INSTRUCTION_DEFINITION_SPECIAL(Name, Id)                            \
     struct Name : RInstructionDescriptor<Id> {                                \
         void execute_specific(Core & core, std::vector<Instruction> & memory, \

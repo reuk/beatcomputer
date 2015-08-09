@@ -20,6 +20,8 @@ Todo
 
 * some 'execute' callback handler that changes highlighted row
 
+* uninitialized memory (from program file) should be zeroed/NOPed
+
 Done
 ----
 

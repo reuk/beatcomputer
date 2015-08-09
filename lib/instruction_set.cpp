@@ -30,17 +30,6 @@ using namespace std;
     template <>                                                               \
     const string IInstructionDescriptor<Id>::str = String;
 
-#define J_INSTRUCTION_IMPLEMENTATION(Name, String, Id, functionbody, tooltip) \
-    void Name::execute_specific(Core &core, vector<Instruction> &memory,      \
-                                int32_t address) const {                      \
-        functionbody;                                                         \
-    }                                                                         \
-    string Name::get_tooltip() const {                                        \
-        return tooltip;                                                       \
-    }                                                                         \
-    template <>                                                               \
-    const string JInstructionDescriptor<Id>::str = String;
-
 #define BINARY_INSTRUCTION_IMPLEMENTATION(Name, Id, Op, tooltip)               \
     R_INSTRUCTION_IMPLEMENTATION(Name##_R, #Name, Id, rd = rs Op rt, tooltip); \
     I_INSTRUCTION_IMPLEMENTATION(Name##_I, #Name, Id, rt = rs Op im, tooltip);
@@ -101,9 +90,9 @@ I_INSTRUCTION_IMPLEMENTATION(OSC_I, "OSC", 0x0F,
                              send_osc(osc_out_port, osc_out_prefix,
                                       osc_out_address, rt, rs, im),
                              "OSC    a b c   -> send osc");
-R_INSTRUCTION_IMPLEMENTATION(JUMP_R, "JUMP", 0x12, core.ip = rd,
+R_INSTRUCTION_IMPLEMENTATION(JUMP_R, "JUMP", 0x12, core.ip = rd - 1,
                              "JUMP   a       -> go to a");
-I_INSTRUCTION_IMPLEMENTATION(JUMP_I, "JUMP", 0x12, core.ip = im,
+I_INSTRUCTION_IMPLEMENTATION(JUMP_I, "JUMP", 0x12, core.ip = im - 1,
                              "JUMP   a       -> go to a");
 I_INSTRUCTION_IMPLEMENTATION(JE, "JE", 0x13, if (rs == rt) core.ip = im,
                              "JE     a b c   -> if a == b go to c");

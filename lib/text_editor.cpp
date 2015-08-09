@@ -16,6 +16,8 @@ int clamp(int in, int mini, int maxi) {
 }
 
 void TextEditor::load_from_file(const string & fname) {
+    contents.clear();
+
     ifstream infile(fname);
     for (string line; getline(infile, line);) {
         if (!trim(line).empty()) {
@@ -23,16 +25,7 @@ void TextEditor::load_from_file(const string & fname) {
         }
     }
 
-    auto y = 0;
-    for (auto line : contents) {
-        auto x = 0;
-        for (auto character : line) {
-            call(&TextEditorListener::cursor_moved, y, x);
-            call(&TextEditorListener::character_added, character);
-            x += 1;
-        }
-        y += 1;
-    }
+    set_contents(contents);
 }
 
 void TextEditor::move_cursor(Direction direction) {
@@ -89,6 +82,17 @@ const vector<string> & TextEditor::get_contents() const {
 
 void TextEditor::set_contents(const vector<string> & in) {
     contents = in;
+
+    auto y = 0;
+    for (auto line : contents) {
+        auto x = 0;
+        for (auto character : line) {
+            call(&TextEditorListener::cursor_moved, y, x);
+            call(&TextEditorListener::character_added, character);
+            x += 1;
+        }
+        y += 1;
+    }
 }
 
 void TextEditor::split_line() {
