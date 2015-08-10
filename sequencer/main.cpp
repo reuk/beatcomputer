@@ -8,6 +8,8 @@
 #include "input.h"
 #include "editor.h"
 #include "editor_command.h"
+#include "osc_receiver.h"
+#include "cursor_storage.h"
 
 #include <ncurses.h>
 
@@ -65,46 +67,22 @@ static const bool prefix_dummy =
 static const bool address_dummy =
     gflags::RegisterFlagValidator(&FLAGS_osc_address, &validate_address);
 
-struct StatusDisplay {
-    StatusDisplay(const InstructionList &il, const Core &core,
-                  const vector<Instruction> &memory)
-        : il(il)
-        , core(core)
-        , memory(memory) {
-    }
-    const InstructionList &il;
-    const Core &core;
-    const vector<Instruction> &memory;
-};
-
-struct CursorStorage {
-    CursorStorage(const Window & w): w(w) {
-        getsyx(y, x);
-    }
-
-    ~CursorStorage() {
-        w.noutrefresh();
-        setsyx(y, x);
-    }
-
-private:
-    const Window & w;
-    int y, x;
-};
-
-#define STORE_CURSOR CursorStorage sl_##__COUNTER__(*this);
-
-struct TickListener {
-    virtual void tick(int prev, int ip) = 0;
-};
-
-class ContentWindow : public Window, public StatusDisplay, public TextEditorListener, public TickListener {
+class TickListener {
 public:
-    ContentWindow(WINDOW *parent, int height, int width, int starty, int startx,
-                  const InstructionList &il, const Core &core,
-                  const vector<Instruction> &memory)
-        : Window(parent, height, width, starty, startx)
-        , StatusDisplay(il, core, memory) {
+    TickListener(): prev(0) {}
+    void tick(int line) {
+        on_tick(prev, line);
+        prev = line;
+    }
+    virtual void on_tick(int prev, int line) = 0;
+private:
+    int prev;
+};
+
+class ContentWindow : public Window, public TextEditorListener, public TickListener {
+public:
+    ContentWindow(WINDOW *parent, int height, int width, int starty, int startx)
+        : Window(parent, height, width, starty, startx) {
     }
 
     void cursor_moved(int y, int x) override {
@@ -118,7 +96,7 @@ public:
         refresh();
     }
 
-    void tick(int prev, int line) override {
+    void on_tick(int prev, int line) override {
         STORE_CURSOR;
 
         w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
@@ -130,10 +108,8 @@ public:
 
 class MachineCodeWindow : public ContentWindow {
 public:
-    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx,
-                  const InstructionList &il, const Core &core,
-                  const vector<Instruction> &memory)
-        : ContentWindow(parent, height, get_width(), starty, startx, il, core, memory) {
+    MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
+        : ContentWindow(parent, height, get_width(), starty, startx) {
     }
 
     static int get_width() {
@@ -143,10 +119,8 @@ public:
 
 class MnemonicWindow : public ContentWindow {
 public:
-    MnemonicWindow(WINDOW *parent, int height, int starty, int startx,
-                  const InstructionList &il, const Core &core,
-                  const vector<Instruction> &memory)
-        : ContentWindow(parent, height, get_width(), starty, startx, il, core, memory) {
+    MnemonicWindow(WINDOW *parent, int height, int starty, int startx)
+        : ContentWindow(parent, height, get_width(), starty, startx) {
     }
 
     static int get_width() {
@@ -154,29 +128,16 @@ public:
     }
 };
 
-class TooltipWindow : public Window, public StatusDisplay, public TickListener {
+class TooltipWindow : public Window, public TickListener, public LineUpdateListener {
 public:
     TooltipWindow(WINDOW *parent, int height, int starty, int startx,
-                  const InstructionList &il, const Core &core,
-                  const vector<Instruction> &memory)
+                  const InstructionList & il, const vector<Instruction> & memory)
         : Window(parent, height, get_width(), starty, startx)
-        , StatusDisplay(il, core, memory) {
+        , il(il)
+        , memory(memory) {
     }
 
-    void draw() const {
-        STORE_CURSOR;
-
-        erase();
-
-        auto line = 0;
-        for(auto i : memory) {
-            print(line++, 0, il.tooltip(i));
-        }
-
-        w_mvchgat(core.ip, 0, -1, WA_BOLD, 1);
-    }
-
-    void tick(int prev, int line) override {
+    void on_tick(int prev, int line) override {
         STORE_CURSOR;
 
         w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
@@ -185,21 +146,29 @@ public:
         touch();
     }
 
+    void line_updated(int line) override {
+        STORE_CURSOR;
+        print(line, 0, il.tooltip(memory[line]));
+    }
+
     static int get_width() {
         return 50;
     }
+private:
+    const InstructionList &il;
+    const vector<Instruction> &memory;
 };
 
-class CoreCoreWindow : public Window, public StatusDisplay, public TickListener {
+class CoreCoreWindow : public Window, public TickListener {
 public:
     CoreCoreWindow(WINDOW *parent, int height, int starty, int startx,
-                   const InstructionList &il, const Core &core,
-                   const vector<Instruction> &memory)
+                   const InstructionList &il, const Core &core)
         : Window(parent, height, get_width(), starty, startx)
-        , StatusDisplay(il, core, memory) {
+        , il(il)
+        , core(core) {
     }
 
-    void tick(int, int) override {
+    void on_tick(int, int) override {
         STORE_CURSOR;
 
         erase();
@@ -223,6 +192,9 @@ public:
     static int get_width() {
         return 5 + 8;
     }
+private:
+    const InstructionList &il;
+    const Core &core;
 };
 
 class CoreWindow : public Window, public ListenerList<TickListener> {
@@ -237,20 +209,23 @@ public:
         , il(il)
         , memory(MEMORY_LOCATIONS)
         , editor(il)
-        , window_machine_code("ram", *this, HEIGHT, 0, 0, il, core, memory)
+        , window_machine_code("ram", *this, HEIGHT, 0, 0)
         , window_mnemonic("code", *this, HEIGHT, 0,
-                          decltype(window_machine_code)::get_width(), il, core, memory)
+                          decltype(window_machine_code)::get_width())
         , window_tooltip("tooltips", *this, HEIGHT, 0,
                          decltype(window_machine_code)::get_width() +
                              decltype(window_mnemonic)::get_width(),
-                         il, core, memory)
+                         il, memory)
         , window_core("status", *this, HEIGHT, 0,
                       decltype(window_machine_code)::get_width() +
                           decltype(window_mnemonic)::get_width() +
                           decltype(window_tooltip)::get_width(),
-                      il, core, memory) {
-        editor.memory.add_listener(&window_machine_code.get_contents());
-        editor.mnemonics.add_listener(&window_mnemonic.get_contents());
+                      il, core) {
+        editor.memory.add_listener_text_editor(&window_machine_code.get_contents());
+        editor.mnemonics.add_listener_text_editor(&window_mnemonic.get_contents());
+
+        editor.memory.add_listener_line_update(&window_tooltip.get_contents());
+        editor.mnemonics.add_listener_line_update(&window_tooltip.get_contents());
 
         add_listener(&window_machine_code.get_contents());
         add_listener(&window_mnemonic.get_contents());
@@ -264,13 +239,11 @@ public:
     }
 
     void execute() {
-        auto prev = core.ip;
-
         il.execute(core, memory);
 
         core.ip = core.ip % MEMORY_LOCATIONS;
 
-        call(&TickListener::tick, prev, core.ip);
+        call(&TickListener::tick, core.ip);
         doupdate();
     }
 
@@ -280,8 +253,7 @@ public:
 
         window_mnemonic.get_contents().cursor_moved(0, 0);
 
-        window_tooltip.get_contents().draw();
-        call(&TickListener::tick, 0, 0);
+        call(&TickListener::tick, 0);
         doupdate();
     }
 
@@ -299,42 +271,6 @@ private:
     BoxedWindow<MnemonicWindow> window_mnemonic;
     BoxedWindow<TooltipWindow> window_tooltip;
     BoxedWindow<CoreCoreWindow> window_core;
-};
-
-class OscReceiver : public osc::OscPacketListener {
-public:
-    OscReceiver(ThreadedQueue<Input> &tq)
-        : tq(tq) {
-    }
-
-protected:
-    void ProcessMessage(const osc::ReceivedMessage &m,
-                        const IpEndpointName &ip) override {
-        try {
-            if (m.AddressPattern() == string("/time_server")) {
-                osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
-                const char *str;
-                args >> str >> osc::EndMessage;
-
-                if (str == string("tick")) {
-                    tq.push(Input(Input::Type::TICK));
-                }
-            } else if (m.AddressPattern() == string("/key_server")) {
-                osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
-                osc::int32 key;
-                args >> key >> osc::EndMessage;
-
-                tq.push(Input(Input::Type::KEY, key));
-            }
-
-        } catch (const osc::Exception &e) {
-            cout << "error parsing message: " << m.AddressPattern() << ": "
-                 << e.what() << endl;
-        }
-    }
-
-private:
-    ThreadedQueue<Input> &tq;
 };
 
 int main(int argc, char **argv) {

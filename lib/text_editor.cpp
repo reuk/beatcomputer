@@ -52,11 +52,11 @@ void TextEditor::move_cursor(Direction direction) {
 
     cursor.x = clamp(cursor.x, 0, contents[cursor.y].size() - 1);
 
-    call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
+    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }
 
 void TextEditor::select() const {
-    call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
+    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }
 
 void TextEditor::insert_character(char character) {
@@ -66,7 +66,7 @@ void TextEditor::insert_character(char character) {
         auto & t = contents[cursor.y];
         t.insert(t.begin() + cursor.x, character);
 
-        call(&TextEditorListener::character_added, character);
+        ListenerList<TextEditorListener>::call(&TextEditorListener::character_added, character);
     }
 }
 
@@ -87,8 +87,8 @@ void TextEditor::set_contents(const vector<string> & in) {
     for (auto line : contents) {
         auto x = 0;
         for (auto character : line) {
-            call(&TextEditorListener::cursor_moved, y, x);
-            call(&TextEditorListener::character_added, character);
+            ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, y, x);
+            ListenerList<TextEditorListener>::call(&TextEditorListener::character_added, character);
             x += 1;
         }
         y += 1;

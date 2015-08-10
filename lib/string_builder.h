@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sstream>
+
 template <typename T>
 void build_string(std::stringstream &ss, T &&t) {
     ss << t;
