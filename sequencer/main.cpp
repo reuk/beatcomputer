@@ -345,8 +345,7 @@ int main(int argc, char **argv) {
         };
 
     try {
-        auto quit = false;
-        while (!quit) {
+        for (;;) {
             Input popped;
             inputs.pop(popped);
 
