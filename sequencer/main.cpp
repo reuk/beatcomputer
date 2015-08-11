@@ -90,24 +90,34 @@ public:
             : Window(parent, height, width, starty, startx) {
     }
 
-    void cursor_moved(int y, int x) override {
-        Logger::log("cursor moved to: ", y, ", ", x);
-        w_move(y, x);
+    void cursor_moved(const Vec2 & pos) override {
+        w_move(pos.y, pos.x);
         refresh();
     }
 
-    void character_added(char character) override {
-        w_addch(character);
-        refresh();
+    void line_modified(int line, const string & contents) override {
+        {
+            STORE_CURSOR;
+
+            w_move(line, 0);
+            w_clrtoeol();
+            print(line, 0, contents);
+
+            touch();
+        }
+        doupdate();
     }
 
     void on_tick(int prev, int line) override {
-        STORE_CURSOR;
+        {
+            STORE_CURSOR;
 
-        w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
-        w_mvchgat(line, 0, -1, WA_BOLD, 1);
+            w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
+            w_mvchgat(line, 0, -1, WA_BOLD, 1);
 
-        touch();
+            touch();
+        }
+        doupdate();
     }
 };
 
@@ -149,12 +159,16 @@ public:
     }
 
     void on_tick(int prev, int line) override {
-        STORE_CURSOR;
+        {
+            STORE_CURSOR;
 
-        w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
-        w_mvchgat(line, 0, -1, WA_BOLD, 1);
+            w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
+            w_mvchgat(line, 0, -1, WA_BOLD, 1);
 
-        touch();
+            touch();
+        }
+
+        doupdate();
     }
 
     void line_updated(int line, const string &) override {
@@ -281,17 +295,15 @@ public:
         core.ip = core.ip % MEMORY_LOCATIONS;
 
         call(&TickListener::tick, core.ip);
-        doupdate();
     }
 
     void load_from_file(const string &fname) {
         editor.load_from_file(fname);
         set_memory(editor.get_memory());
 
-        window_mnemonic.get_contents().cursor_moved(0, 0);
+        window_mnemonic.get_contents().cursor_moved(Vec2());
 
         call(&TickListener::tick, 0);
-        doupdate();
     }
 
 private:
@@ -333,6 +345,7 @@ int main(int argc, char **argv) {
 
     CoreWindow cw(stdscr, instruction_list, 0, 0);
     cw.load_from_file(argv[1]);
+    doupdate();
 
     mutex global_mutex;
 

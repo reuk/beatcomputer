@@ -44,6 +44,9 @@ int Window::w_move(int y, int x) const {
 int Window::touch() const {
     return touchwin(window.get());
 }
+int Window::w_clrtoeol() const {
+    return wclrtoeol(window.get());
+}
 
 int Window::w_attron(int attr) const {
     return wattron(window.get(), attr);

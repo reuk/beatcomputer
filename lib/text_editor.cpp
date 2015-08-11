@@ -28,6 +28,9 @@ void TextEditor::load_from_file(const string & fname) {
     set_contents(contents);
 }
 
+//  TODO
+#define LINE_LENGTH 32
+
 void TextEditor::move_cursor(Direction direction) {
     switch (direction) {
         case Direction::UP:
@@ -50,33 +53,42 @@ void TextEditor::move_cursor(Direction direction) {
             break;
     }
 
-    cursor.x = clamp(cursor.x, 0, contents[cursor.y].size() - 1);
+    cursor.x = clamp(cursor.x, 0, min(LINE_LENGTH - 1, (int)contents[cursor.y].size()));
 
     ListenerList<TextEditorListener>::call(
-        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
+        &TextEditorListener::cursor_moved, cursor);
 }
 
 void TextEditor::select() const {
     ListenerList<TextEditorListener>::call(
-        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
+        &TextEditorListener::cursor_moved, cursor);
 }
 
 void TextEditor::insert_character(char character) {
     if (character == '\n') {
         split_line();
-    } else {
-        auto & t = contents[cursor.y];
-        t.insert(t.begin() + cursor.x, character);
-
-        ListenerList<TextEditorListener>::call(
-            &TextEditorListener::character_added, character);
+        return;
     }
+
+    auto & t = contents[cursor.y];
+
+    if (t.size() >= LINE_LENGTH) {
+        //  overwrite mode
+        t[cursor.x] = character;
+    } else {
+        //  insert mode
+        t.insert(t.begin() + cursor.x, character);
+    }
+
+    move_cursor(Direction::RIGHT);
+    ListenerList<TextEditorListener>::call(
+        &TextEditorListener::line_modified, cursor.y, t);
+    ListenerList<LineUpdateListener>::call(
+        &LineUpdateListener::line_updated, cursor.y, t);
 }
 
 void TextEditor::backspace() {
-}
-
-void TextEditor::del() {
+    //  TODO
 }
 
 const vector<string> & TextEditor::get_contents() const {
@@ -88,14 +100,8 @@ void TextEditor::set_contents(const vector<string> & in) {
 
     auto y = 0;
     for (auto line : contents) {
-        auto x = 0;
-        for (auto character : line) {
-            ListenerList<TextEditorListener>::call(
-                &TextEditorListener::cursor_moved, y, x);
-            ListenerList<TextEditorListener>::call(
-                &TextEditorListener::character_added, character);
-            x += 1;
-        }
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::line_modified, y, line);
         ListenerList<LineUpdateListener>::call(
             &LineUpdateListener::line_updated, y, line);
 
@@ -104,21 +110,12 @@ void TextEditor::set_contents(const vector<string> & in) {
 }
 
 void TextEditor::split_line() {
+    //  TODO
 }
 
 void TextEditor::set_line(int line, const string & in) {
     contents[line] = in;
 
-    auto x = 0;
-    for (auto i : in) {
-        ListenerList<TextEditorListener>::call(
-            &TextEditorListener::cursor_moved, line, x);
-        ListenerList<TextEditorListener>::call(
-            &TextEditorListener::character_added, i);
-
-        x += 1;
-    }
-
     ListenerList<TextEditorListener>::call(
-        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
+        &TextEditorListener::line_modified, line, contents[line]);
 }

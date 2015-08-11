@@ -29,6 +29,7 @@ public:
     virtual int resize(int v, int h) const;
     virtual int touch() const;
 
+    virtual int w_clrtoeol() const;
     virtual int w_addch(const chtype ch) const;
     virtual int w_move(int y, int x) const;
     virtual int w_attron(int attr) const;

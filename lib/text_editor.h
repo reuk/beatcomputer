@@ -12,8 +12,8 @@ struct Vec2 {
 };
 
 struct TextEditorListener {
-    virtual void cursor_moved(int y, int x) = 0;
-    virtual void character_added(char character) = 0;
+    virtual void cursor_moved(const Vec2 & pos) = 0;
+    virtual void line_modified(int line, const std::string & contents) = 0;
 };
 
 struct LineUpdateListener {
@@ -28,7 +28,6 @@ public:
     void move_cursor(Direction direction);
     void insert_character(char character);
     void backspace();
-    void del();
     void select() const;
 
     const std::vector<std::string> & get_contents() const;
