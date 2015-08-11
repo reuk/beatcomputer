@@ -8,7 +8,7 @@
 template <typename T>
 struct InstructionTest : public ::testing::Test {
     InstructionTest()
-        : memory(32) {
+            : memory(32) {
     }
 
     T descriptor;

@@ -5,31 +5,31 @@
 
 using namespace std;
 
-void EditorCommand::do_command(Editor &e) {}
-void EditorCommand::undo_command(Editor &e) {}
+void EditorCommand::do_command(Editor &e) {
+}
+void EditorCommand::undo_command(Editor &e) {
+}
 
 InsertCommand::InsertCommand(char character)
-    : character(character) {
+        : character(character) {
 }
 
 void InsertCommand::do_command(Editor &e) {
-    e.sync();
+    e.selected_editor().insert_character(character);
 }
 
 void InsertCommand::undo_command(Editor &e) {
-    e.sync();
+    e.selected_editor().backspace();
 }
 
 void BackspaceCommand::do_command(Editor &e) {
-    e.sync();
 }
 
 void BackspaceCommand::undo_command(Editor &e) {
-    e.sync();
 }
 
 MoveCommand::MoveCommand(Direction direction)
-    : direction(direction) {
+        : direction(direction) {
 }
 
 void MoveCommand::do_command(Editor &e) {

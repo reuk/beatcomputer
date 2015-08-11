@@ -17,10 +17,11 @@ struct TextEditorListener {
 };
 
 struct LineUpdateListener {
-    virtual void line_updated(int line) = 0;
+    virtual void line_updated(int line, const std::string & contents) = 0;
 };
 
-class TextEditor : public ListenerList<TextEditorListener>, public ListenerList<LineUpdateListener> {
+class TextEditor : public ListenerList<TextEditorListener>,
+                   public ListenerList<LineUpdateListener> {
 public:
     void load_from_file(const std::string & fname);
 
@@ -33,14 +34,16 @@ public:
     const std::vector<std::string> & get_contents() const;
     void set_contents(const std::vector<std::string> & in);
 
+    void set_line(int line, const std::string & in);
+
     void split_line();
 
-    template<typename T>
+    template <typename T>
     void add_listener_text_editor(T t) {
         ListenerList<TextEditorListener>::add_listener(t);
     }
 
-    template<typename T>
+    template <typename T>
     void add_listener_line_update(T t) {
         ListenerList<LineUpdateListener>::add_listener(t);
     }

@@ -7,11 +7,11 @@ void Window::Destructor::operator()(WINDOW *win) {
 }
 
 Window::Window(int height, int width, int starty, int startx)
-    : window(newwin(height, width, starty, startx)) {
+        : window(newwin(height, width, starty, startx)) {
 }
 
 Window::Window(WINDOW *parent, int height, int width, int starty, int startx)
-    : window(derwin(parent, height, width, starty, startx)) {
+        : window(derwin(parent, height, width, starty, startx)) {
 }
 
 Window::Window(Window &&rhs) noexcept = default;

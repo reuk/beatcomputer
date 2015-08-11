@@ -7,7 +7,7 @@
 using namespace std;
 
 OscReceiver::OscReceiver(ThreadedQueue<Input> &tq)
-    : tq(tq) {
+        : tq(tq) {
 }
 
 void OscReceiver::ProcessMessage(const osc::ReceivedMessage &m,
@@ -30,6 +30,7 @@ void OscReceiver::ProcessMessage(const osc::ReceivedMessage &m,
         }
 
     } catch (const osc::Exception &e) {
-        throw runtime_error(build_string("error parsing message: ", m.AddressPattern(), ": ", e.what()));
+        throw runtime_error(build_string(
+            "error parsing message: ", m.AddressPattern(), ": ", e.what()));
     }
 }

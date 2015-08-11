@@ -16,9 +16,10 @@ string & r_trim(string & str) {
 string & l_trim(string & str) {
     if (!isspace(str.back()))
         return str;
-    str.erase(find_if(str.rbegin(), str.rend(), [](auto i) {
-                  return isspace(i);
-              }).base(), end(str));
+    str.erase(
+        find_if(str.rbegin(), str.rend(), [](auto i) { return isspace(i); })
+            .base(),
+        end(str));
     return str;
 }
 

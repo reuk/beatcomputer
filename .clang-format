@@ -18,11 +18,11 @@ AlwaysBreakBeforeMultilineStrings: true
 BreakBeforeBinaryOperators: false
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
-BinPackParameters: true
-BinPackArguments: true
+BinPackParameters: false
+BinPackArguments: false
 ColumnLimit:     80
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-ConstructorInitializerIndentWidth: 4
+ConstructorInitializerIndentWidth: 8
 DerivePointerAlignment: true
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true

@@ -13,7 +13,7 @@ using namespace std;
 class Ticker {
 public:
     Ticker()
-        : socket(IpEndpointName(address.c_str(), port)) {
+            : socket(IpEndpointName(address.c_str(), port)) {
     }
 
     void tick() {

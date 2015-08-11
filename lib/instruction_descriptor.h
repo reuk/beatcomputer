@@ -14,7 +14,8 @@ public:
     virtual Instruction assemble(
         const std::vector<std::string> & str) const = 0;
     virtual std::string disassemble(Instruction instr) const = 0;
-    virtual void execute(Core & core, std::vector<Instruction> & memory,
+    virtual void execute(Core & core,
+                         std::vector<Instruction> & memory,
                          Instruction instr) const = 0;
 
     virtual std::string get_string() const = 0;
@@ -46,7 +47,8 @@ public:
         return disassemble_specific(instr);
     }
 
-    void execute(Core & core, std::vector<Instruction> & memory,
+    void execute(Core & core,
+                 std::vector<Instruction> & memory,
                  Instruction instr) const override {
         int32_t & rs = core.reg[instr.r.rs];
         int32_t & rt = core.reg[instr.r.rt];
@@ -56,7 +58,9 @@ public:
 
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
-                                  int32_t & rs, int32_t & rt, int32_t & rd,
+                                  int32_t & rs,
+                                  int32_t & rt,
+                                  int32_t & rd,
                                   uint32_t shamt) const {};
 
     virtual InstructionR assemble_specific(
@@ -104,7 +108,8 @@ public:
         return disassemble_specific(instr);
     }
 
-    void execute(Core & core, std::vector<Instruction> & memory,
+    void execute(Core & core,
+                 std::vector<Instruction> & memory,
                  Instruction instr) const override {
         int32_t & rs = core.reg[instr.i.rs];
         int32_t & rt = core.reg[instr.i.rt];
@@ -113,7 +118,8 @@ public:
 
     virtual void execute_specific(Core & core,
                                   std::vector<Instruction> & memory,
-                                  int32_t & rs, int32_t & rt,
+                                  int32_t & rs,
+                                  int32_t & rt,
                                   int32_t immediate) const = 0;
 
     virtual InstructionI assemble_specific(
@@ -158,7 +164,8 @@ public:
         return disassemble_specific(instr);
     }
 
-    void execute(Core & core, std::vector<Instruction> & memory,
+    void execute(Core & core,
+                 std::vector<Instruction> & memory,
                  Instruction instr) const override {
         execute_specific(core, memory, instr.j.address);
     }

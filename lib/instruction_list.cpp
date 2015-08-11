@@ -13,9 +13,9 @@
 using namespace std;
 
 InstructionList::InstructionList(const InstructionManager & im)
-    : assembly_table(build_assembly_table(im))
-    , execution_op_table(build_op_table(im))
-    , execution_fu_table(build_fu_table(im)) {
+        : assembly_table(build_assembly_table(im))
+        , execution_op_table(build_op_table(im))
+        , execution_fu_table(build_fu_table(im)) {
 }
 
 OpType InstructionList::get_op_type(Instruction instr) const {
@@ -31,8 +31,8 @@ OpType InstructionList::get_op_type(Instruction instr) const {
 
 Instruction InstructionList::assemble(string & str) const {
     trim(str);
-    transform(begin(str), end(str), begin(str),
-              [](auto i) { return toupper(i); });
+    transform(
+        begin(str), end(str), begin(str), [](auto i) { return toupper(i); });
     istringstream to_tokenize(str);
     vector<string> tokens((istream_iterator<string>(to_tokenize)),
                           istream_iterator<string>());

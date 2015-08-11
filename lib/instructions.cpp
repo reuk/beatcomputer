@@ -1,16 +1,16 @@
 #include "instructions.h"
 
 Instruction::Instruction(uint32_t raw)
-    : raw(raw) {
+        : raw(raw) {
 }
 Instruction::Instruction(InstructionR instr)
-    : r(instr) {
+        : r(instr) {
 }
 Instruction::Instruction(InstructionI instr)
-    : i(instr) {
+        : i(instr) {
 }
 Instruction::Instruction(InstructionJ instr)
-    : j(instr) {
+        : j(instr) {
 }
 
 Instruction::operator InstructionR() const {

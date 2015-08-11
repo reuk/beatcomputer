@@ -69,20 +69,25 @@ static const bool address_dummy =
 
 class TickListener {
 public:
-    TickListener(): prev(0) {}
+    TickListener()
+            : prev(0) {
+    }
     void tick(int line) {
         on_tick(prev, line);
         prev = line;
     }
     virtual void on_tick(int prev, int line) = 0;
+
 private:
     int prev;
 };
 
-class ContentWindow : public Window, public TextEditorListener, public TickListener {
+class ContentWindow : public Window,
+                      public TextEditorListener,
+                      public TickListener {
 public:
     ContentWindow(WINDOW *parent, int height, int width, int starty, int startx)
-        : Window(parent, height, width, starty, startx) {
+            : Window(parent, height, width, starty, startx) {
     }
 
     void cursor_moved(int y, int x) override {
@@ -109,7 +114,7 @@ public:
 class MachineCodeWindow : public ContentWindow {
 public:
     MachineCodeWindow(WINDOW *parent, int height, int starty, int startx)
-        : ContentWindow(parent, height, get_width(), starty, startx) {
+            : ContentWindow(parent, height, get_width(), starty, startx) {
     }
 
     static int get_width() {
@@ -120,7 +125,7 @@ public:
 class MnemonicWindow : public ContentWindow {
 public:
     MnemonicWindow(WINDOW *parent, int height, int starty, int startx)
-        : ContentWindow(parent, height, get_width(), starty, startx) {
+            : ContentWindow(parent, height, get_width(), starty, startx) {
     }
 
     static int get_width() {
@@ -128,13 +133,19 @@ public:
     }
 };
 
-class TooltipWindow : public Window, public TickListener, public LineUpdateListener {
+class TooltipWindow : public Window,
+                      public TickListener,
+                      public LineUpdateListener {
 public:
-    TooltipWindow(WINDOW *parent, int height, int starty, int startx,
-                  const InstructionList & il, const vector<Instruction> & memory)
-        : Window(parent, height, get_width(), starty, startx)
-        , il(il)
-        , memory(memory) {
+    TooltipWindow(WINDOW *parent,
+                  int height,
+                  int starty,
+                  int startx,
+                  const InstructionList &il,
+                  const vector<Instruction> &memory)
+            : Window(parent, height, get_width(), starty, startx)
+            , il(il)
+            , memory(memory) {
     }
 
     void on_tick(int prev, int line) override {
@@ -146,7 +157,7 @@ public:
         touch();
     }
 
-    void line_updated(int line) override {
+    void line_updated(int line, const string &) override {
         STORE_CURSOR;
         print(line, 0, il.tooltip(memory[line]));
     }
@@ -154,6 +165,7 @@ public:
     static int get_width() {
         return 50;
     }
+
 private:
     const InstructionList &il;
     const vector<Instruction> &memory;
@@ -161,11 +173,15 @@ private:
 
 class CoreCoreWindow : public Window, public TickListener {
 public:
-    CoreCoreWindow(WINDOW *parent, int height, int starty, int startx,
-                   const InstructionList &il, const Core &core)
-        : Window(parent, height, get_width(), starty, startx)
-        , il(il)
-        , core(core) {
+    CoreCoreWindow(WINDOW *parent,
+                   int height,
+                   int starty,
+                   int startx,
+                   const InstructionList &il,
+                   const Core &core)
+            : Window(parent, height, get_width(), starty, startx)
+            , il(il)
+            , core(core) {
     }
 
     void on_tick(int, int) override {
@@ -175,7 +191,8 @@ public:
 
         auto line = 0;
         auto print_register = [this, &line](auto reg_id, auto value) {
-            print(line, 0,
+            print(line,
+                  0,
                   build_string(setw(3), reg_id, ": ", machine_word(value)));
 
             line += 1;
@@ -192,6 +209,7 @@ public:
     static int get_width() {
         return 5 + 8;
     }
+
 private:
     const InstructionList &il;
     const Core &core;
@@ -199,33 +217,52 @@ private:
 
 class CoreWindow : public Window, public ListenerList<TickListener> {
 public:
-    CoreWindow(WINDOW *parent, const InstructionList &il, int starty,
+    CoreWindow(WINDOW *parent,
+               const InstructionList &il,
+               int starty,
                int startx)
-        : Window(parent, HEIGHT, decltype(window_machine_code)::get_width() +
-                                     decltype(window_mnemonic)::get_width() +
-                                     decltype(window_tooltip)::get_width() +
-                                     decltype(window_core)::get_width(),
-                 starty, startx)
-        , il(il)
-        , memory(MEMORY_LOCATIONS)
-        , editor(il)
-        , window_machine_code("ram", *this, HEIGHT, 0, 0)
-        , window_mnemonic("code", *this, HEIGHT, 0,
-                          decltype(window_machine_code)::get_width())
-        , window_tooltip("tooltips", *this, HEIGHT, 0,
-                         decltype(window_machine_code)::get_width() +
-                             decltype(window_mnemonic)::get_width(),
-                         il, memory)
-        , window_core("status", *this, HEIGHT, 0,
-                      decltype(window_machine_code)::get_width() +
-                          decltype(window_mnemonic)::get_width() +
-                          decltype(window_tooltip)::get_width(),
-                      il, core) {
-        editor.memory.add_listener_text_editor(&window_machine_code.get_contents());
-        editor.mnemonics.add_listener_text_editor(&window_mnemonic.get_contents());
+            : Window(parent,
+                     HEIGHT,
+                     decltype(window_machine_code)::get_width() +
+                         decltype(window_mnemonic)::get_width() +
+                         decltype(window_tooltip)::get_width() +
+                         decltype(window_core)::get_width(),
+                     starty,
+                     startx)
+            , il(il)
+            , memory(MEMORY_LOCATIONS)
+            , editor(il)
+            , window_machine_code("ram", *this, HEIGHT, 0, 0)
+            , window_mnemonic("code",
+                              *this,
+                              HEIGHT,
+                              0,
+                              decltype(window_machine_code)::get_width())
+            , window_tooltip("tooltips",
+                             *this,
+                             HEIGHT,
+                             0,
+                             decltype(window_machine_code)::get_width() +
+                                 decltype(window_mnemonic)::get_width(),
+                             il,
+                             memory)
+            , window_core("status",
+                          *this,
+                          HEIGHT,
+                          0,
+                          decltype(window_machine_code)::get_width() +
+                              decltype(window_mnemonic)::get_width() +
+                              decltype(window_tooltip)::get_width(),
+                          il,
+                          core) {
+        editor.memory.add_listener_text_editor(
+            &window_machine_code.get_contents());
+        editor.mnemonics.add_listener_text_editor(
+            &window_mnemonic.get_contents());
 
         editor.memory.add_listener_line_update(&window_tooltip.get_contents());
-        editor.mnemonics.add_listener_line_update(&window_tooltip.get_contents());
+        editor.mnemonics.add_listener_line_update(
+            &window_tooltip.get_contents());
 
         add_listener(&window_machine_code.get_contents());
         add_listener(&window_mnemonic.get_contents());
@@ -247,7 +284,7 @@ public:
         doupdate();
     }
 
-    void load_from_file(const string & fname) {
+    void load_from_file(const string &fname) {
         editor.load_from_file(fname);
         set_memory(editor.get_memory());
 
@@ -264,8 +301,10 @@ private:
 
     static const int MEMORY_LOCATIONS = 32;
     static const int HEIGHT = 2 + MEMORY_LOCATIONS;
+
 public:
     Editor editor;
+
 private:
     BoxedWindow<MachineCodeWindow> window_machine_code;
     BoxedWindow<MnemonicWindow> window_mnemonic;
@@ -350,17 +389,16 @@ int main(int argc, char **argv) {
             inputs.pop(popped);
 
             switch (popped.get_type()) {
-                case Input::Type::TICK:
-                    {
-                        lock_guard<mutex> lock(global_mutex);
-                        cw.execute();
-                    }
-                    break;
+                case Input::Type::TICK: {
+                    lock_guard<mutex> lock(global_mutex);
+                    cw.execute();
+                } break;
 
                 case Input::Type::KEY:
                     auto key = popped.get_value();
 
-                    unique_ptr<EditorCommand> command = make_unique<EditorCommand>();
+                    unique_ptr<EditorCommand> command =
+                        make_unique<EditorCommand>();
 
                     if (key == KEY_RIGHT) {
                         command = make_unique<MoveCommand>(Direction::RIGHT);

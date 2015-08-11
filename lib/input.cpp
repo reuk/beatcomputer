@@ -1,8 +1,8 @@
 #include "input.h"
 
 Input::Input(Type type, int value)
-    : type(type)
-    , value(value) {
+        : type(type)
+        , value(value) {
 }
 
 Input::Type Input::get_type() const {

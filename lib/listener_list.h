@@ -3,7 +3,8 @@
 #include <set>
 #include <memory>
 
-template <typename Listener, typename Ptr = Listener *,
+template <typename Listener,
+          typename Ptr = Listener *,
           typename Collection = std::set<Ptr>>
 class ListenerList {
 public:

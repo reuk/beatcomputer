@@ -9,9 +9,9 @@
 using namespace std;
 
 Core::Core()
-    : reg()
-    , sp(reg[29])
-    , ip(0) {
+        : reg()
+        , sp(reg[29])
+        , ip(0) {
 }
 
 void Core::print_state() const {

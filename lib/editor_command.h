@@ -17,8 +17,9 @@ public:
     InsertCommand(char character);
     void do_command(Editor &e) override;
     void undo_command(Editor &e) override;
+
 private:
-    const int character;
+    const char character;
 };
 
 class BackspaceCommand : public EditorCommand {
@@ -32,6 +33,7 @@ public:
     MoveCommand(Direction direction);
     void do_command(Editor &e) override;
     void undo_command(Editor &e) override;
+
 private:
     Direction direction;
 };

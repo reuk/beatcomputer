@@ -36,7 +36,7 @@ public:
     class ScopedLog {
     public:
         ScopedLog(const std::string &t)
-            : t(t) {
+                : t(t) {
             Logger::log_err(t, ": begin");
         }
         virtual ~ScopedLog() {

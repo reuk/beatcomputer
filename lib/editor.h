@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 
-class Editor {
+class Editor : public LineUpdateListener {
 public:
     Editor(const InstructionList &instruction_list);
 
@@ -18,12 +18,7 @@ public:
     void undo_command();
     void redo_command();
 
-    void sync_from_memory();
-    void sync_from_mnemonics();
-    void sync();
-
     std::vector<Instruction> get_memory() const;
-    std::vector<std::string> get_mnemonics() const;
 
     enum class Field { MEMORY, MNEMONICS };
 
@@ -32,15 +27,21 @@ public:
 
     TextEditor &get_editor(Field field);
     TextEditor &selected_editor();
+
+    void line_updated(int line, const std::string & contents) override;
+
 private:
     const InstructionList &instruction_list;
     std::vector<std::unique_ptr<EditorCommand>> commands;
     decltype(commands)::size_type head;
 
     Field selected;
+
+    std::vector<Instruction> storage;
+
 public:
     TextEditor memory;
     TextEditor mnemonics;
 };
 
-std::string machine_word(uint32_t word);
+std::string machine_word(Instruction word);

@@ -8,9 +8,11 @@
 class OscReceiver : public osc::OscPacketListener {
 public:
     OscReceiver(ThreadedQueue<Input> &tq);
+
 protected:
     void ProcessMessage(const osc::ReceivedMessage &m,
                         const IpEndpointName &ip) override;
+
 private:
     ThreadedQueue<Input> &tq;
 };

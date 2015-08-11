@@ -7,8 +7,8 @@
 using namespace std;
 
 Vec2::Vec2(int y, int x)
-    : y(y)
-    , x(x) {
+        : y(y)
+        , x(x) {
 }
 
 int clamp(int in, int mini, int maxi) {
@@ -52,11 +52,13 @@ void TextEditor::move_cursor(Direction direction) {
 
     cursor.x = clamp(cursor.x, 0, contents[cursor.y].size() - 1);
 
-    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
+    ListenerList<TextEditorListener>::call(
+        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }
 
 void TextEditor::select() const {
-    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, cursor.y, cursor.x);
+    ListenerList<TextEditorListener>::call(
+        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }
 
 void TextEditor::insert_character(char character) {
@@ -66,7 +68,8 @@ void TextEditor::insert_character(char character) {
         auto & t = contents[cursor.y];
         t.insert(t.begin() + cursor.x, character);
 
-        ListenerList<TextEditorListener>::call(&TextEditorListener::character_added, character);
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::character_added, character);
     }
 }
 
@@ -87,13 +90,35 @@ void TextEditor::set_contents(const vector<string> & in) {
     for (auto line : contents) {
         auto x = 0;
         for (auto character : line) {
-            ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved, y, x);
-            ListenerList<TextEditorListener>::call(&TextEditorListener::character_added, character);
+            ListenerList<TextEditorListener>::call(
+                &TextEditorListener::cursor_moved, y, x);
+            ListenerList<TextEditorListener>::call(
+                &TextEditorListener::character_added, character);
             x += 1;
         }
+        ListenerList<LineUpdateListener>::call(
+            &LineUpdateListener::line_updated, y, line);
+
         y += 1;
     }
 }
 
 void TextEditor::split_line() {
+}
+
+void TextEditor::set_line(int line, const string & in) {
+    contents[line] = in;
+
+    auto x = 0;
+    for (auto i : in) {
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::cursor_moved, line, x);
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::character_added, i);
+
+        x += 1;
+    }
+
+    ListenerList<TextEditorListener>::call(
+        &TextEditorListener::cursor_moved, cursor.y, cursor.x);
 }

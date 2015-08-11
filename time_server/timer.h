@@ -17,7 +17,7 @@ public:
 class Timer : public TimerInterface<std::chrono::milliseconds> {
 public:
     Timer()
-        : run(false) {
+            : run(false) {
     }
 
     ~Timer() {

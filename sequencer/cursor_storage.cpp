@@ -2,7 +2,8 @@
 
 #include <ncurses.h>
 
-CursorStorage::CursorStorage(const Window & w): w(w) {
+CursorStorage::CursorStorage(const Window & w)
+        : w(w) {
     getsyx(y, x);
 }
 
@@ -10,4 +11,3 @@ CursorStorage::~CursorStorage() {
     w.noutrefresh();
     setsyx(y, x);
 }
-

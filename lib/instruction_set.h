@@ -2,42 +2,52 @@
 
 #include "instruction_descriptor.h"
 
-#define R_INSTRUCTION_DEFINITION(Name, Id)                                    \
-    struct Name : RInstructionDescriptor<Id> {                                \
-        void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              int32_t & rs, int32_t & rt, int32_t & rd,       \
-                              uint32_t shamt) const override;                 \
-        std::string get_tooltip() const override;                             \
+#define R_INSTRUCTION_DEFINITION(Name, Id)                       \
+    struct Name : RInstructionDescriptor<Id> {                   \
+        void execute_specific(Core & core,                       \
+                              std::vector<Instruction> & memory, \
+                              int32_t & rs,                      \
+                              int32_t & rt,                      \
+                              int32_t & rd,                      \
+                              uint32_t shamt) const override;    \
+        std::string get_tooltip() const override;                \
     };
 
-#define I_INSTRUCTION_DEFINITION(Name, Id)                                    \
-    struct Name : IInstructionDescriptor<Id> {                                \
-        void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              int32_t & rs, int32_t & rt,                     \
-                              int32_t immediate) const override;              \
-        std::string get_tooltip() const override;                             \
+#define I_INSTRUCTION_DEFINITION(Name, Id)                       \
+    struct Name : IInstructionDescriptor<Id> {                   \
+        void execute_specific(Core & core,                       \
+                              std::vector<Instruction> & memory, \
+                              int32_t & rs,                      \
+                              int32_t & rt,                      \
+                              int32_t immediate) const override; \
+        std::string get_tooltip() const override;                \
     };
 
-#define R_INSTRUCTION_DEFINITION_SPECIAL(Name, Id)                            \
-    struct Name : RInstructionDescriptor<Id> {                                \
-        void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              int32_t & rs, int32_t & rt, int32_t & rd,       \
-                              uint32_t shamt) const override;                 \
-        InstructionR assemble_specific(                                       \
-            const std::vector<std::string> & str) const override;             \
-        std::string disassemble_specific(InstructionR inst) const override;   \
-        std::string get_tooltip() const override;                             \
+#define R_INSTRUCTION_DEFINITION_SPECIAL(Name, Id)                          \
+    struct Name : RInstructionDescriptor<Id> {                              \
+        void execute_specific(Core & core,                                  \
+                              std::vector<Instruction> & memory,            \
+                              int32_t & rs,                                 \
+                              int32_t & rt,                                 \
+                              int32_t & rd,                                 \
+                              uint32_t shamt) const override;               \
+        InstructionR assemble_specific(                                     \
+            const std::vector<std::string> & str) const override;           \
+        std::string disassemble_specific(InstructionR inst) const override; \
+        std::string get_tooltip() const override;                           \
     };
 
-#define I_INSTRUCTION_DEFINITION_SPECIAL(Name, Id)                            \
-    struct Name : IInstructionDescriptor<Id> {                                \
-        void execute_specific(Core & core, std::vector<Instruction> & memory, \
-                              int32_t & rs, int32_t & rt,                     \
-                              int32_t immediate) const override;              \
-        InstructionI assemble_specific(                                       \
-            const std::vector<std::string> & str) const override;             \
-        std::string disassemble_specific(InstructionI inst) const override;   \
-        std::string get_tooltip() const override;                             \
+#define I_INSTRUCTION_DEFINITION_SPECIAL(Name, Id)                          \
+    struct Name : IInstructionDescriptor<Id> {                              \
+        void execute_specific(Core & core,                                  \
+                              std::vector<Instruction> & memory,            \
+                              int32_t & rs,                                 \
+                              int32_t & rt,                                 \
+                              int32_t immediate) const override;            \
+        InstructionI assemble_specific(                                     \
+            const std::vector<std::string> & str) const override;           \
+        std::string disassemble_specific(InstructionI inst) const override; \
+        std::string get_tooltip() const override;                           \
     };
 
 #define BINARY_INSTRUCTION_DEFINITION(Name, Id) \
@@ -82,10 +92,14 @@ I_INSTRUCTION_DEFINITION(JGE, 0x18);
 R_INSTRUCTION_DEFINITION_SPECIAL(RND, 0x19);
 
 struct OSC_R : RInstructionDescriptor<0x0F> {
-    OSC_R(int osc_out_port, const std::string & osc_out_prefix,
+    OSC_R(int osc_out_port,
+          const std::string & osc_out_prefix,
           const std::string & osc_out_address);
-    void execute_specific(Core & core, std::vector<Instruction> & memory,
-                          int32_t & rs, int32_t & rt, int32_t & rd,
+    void execute_specific(Core & core,
+                          std::vector<Instruction> & memory,
+                          int32_t & rs,
+                          int32_t & rt,
+                          int32_t & rd,
                           uint32_t shamt) const override;
     std::string get_tooltip() const override;
 
@@ -96,10 +110,13 @@ private:
 };
 
 struct OSC_I : IInstructionDescriptor<0x0F> {
-    OSC_I(int osc_out_port, const std::string & osc_out_prefix,
+    OSC_I(int osc_out_port,
+          const std::string & osc_out_prefix,
           const std::string & osc_out_address);
-    void execute_specific(Core & core, std::vector<Instruction> & memory,
-                          int32_t & rs, int32_t & rt,
+    void execute_specific(Core & core,
+                          std::vector<Instruction> & memory,
+                          int32_t & rs,
+                          int32_t & rt,
                           int32_t immediate) const override;
     std::string get_tooltip() const override;
 

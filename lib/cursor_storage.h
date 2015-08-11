@@ -6,6 +6,7 @@ class CursorStorage {
 public:
     CursorStorage(const Window & w);
     ~CursorStorage();
+
 private:
     const Window & w;
     int y, x;
