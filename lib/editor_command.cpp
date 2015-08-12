@@ -23,9 +23,11 @@ void InsertCommand::undo_command(Editor &e) {
 }
 
 void BackspaceCommand::do_command(Editor &e) {
+    character = e.selected_editor().backspace();
 }
 
 void BackspaceCommand::undo_command(Editor &e) {
+    e.selected_editor().insert_character(character);
 }
 
 MoveCommand::MoveCommand(Direction direction)

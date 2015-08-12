@@ -423,6 +423,8 @@ int main(int argc, char **argv) {
                         command = make_unique<MoveCommand>(Direction::UP);
                     } else if (key == '\t') {
                         command = make_unique<SelectCommand>();
+                    } else if (key == KEY_BACKSPACE) {
+                        command = make_unique<BackspaceCommand>();
                     } else if (isalnum(key)) {
                         command = make_unique<InsertCommand>(key);
                     }

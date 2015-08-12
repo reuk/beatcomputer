@@ -27,7 +27,7 @@ public:
 
     void move_cursor(Direction direction);
     void insert_character(char character);
-    void backspace();
+    char backspace();
     void select() const;
 
     const std::vector<std::string> & get_contents() const;

@@ -73,10 +73,8 @@ void TextEditor::insert_character(char character) {
     auto & t = contents[cursor.y];
 
     if (t.size() >= LINE_LENGTH) {
-        //  overwrite mode
         t[cursor.x] = character;
     } else {
-        //  insert mode
         t.insert(t.begin() + cursor.x, character);
     }
 
@@ -87,8 +85,20 @@ void TextEditor::insert_character(char character) {
         &LineUpdateListener::line_updated, cursor.y, t);
 }
 
-void TextEditor::backspace() {
-    //  TODO
+char TextEditor::backspace() {
+    auto & t = contents[cursor.y];
+
+    if (cursor.x == 0) {
+
+    } else {
+        t.erase(t.begin() + cursor.x - 1);
+    }
+
+    move_cursor(Direction::LEFT);
+    ListenerList<TextEditorListener>::call(
+        &TextEditorListener::line_modified, cursor.y, t);
+    ListenerList<LineUpdateListener>::call(
+        &LineUpdateListener::line_updated, cursor.y, t);
 }
 
 const vector<string> & TextEditor::get_contents() const {
