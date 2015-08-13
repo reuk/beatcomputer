@@ -411,6 +411,7 @@ int main(int argc, char **argv) {
 
                 case Input::Type::KEY:
                     auto key = popped.get_value();
+                    Logger::log("key pressed: ", key);
 
                     unique_ptr<EditorCommand> command =
                         make_unique<EditorCommand>();
@@ -425,9 +426,9 @@ int main(int argc, char **argv) {
                         command = make_unique<MoveCommand>(Direction::UP);
                     } else if (key == '\t') {
                         command = make_unique<SelectCommand>();
-                    } else if (key == KEY_BACKSPACE) {
+                    } else if (key == KEY_BACKSPACE || key == KEY_DC || key == 127) {
                         command = make_unique<BackspaceCommand>();
-                    } else if (isalnum(key)) {
+                    } else if (isalnum(key) || key == '\n' || key == ' ') {
                         command = make_unique<InsertCommand>(key);
                     }
 

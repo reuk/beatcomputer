@@ -63,8 +63,10 @@ void TextEditor::select() const {
         &TextEditorListener::cursor_moved, cursor);
 }
 
+#define MEM_SIZE 32
+
 void TextEditor::insert_character(char character) {
-    if (character == '\n') {
+    if (character == '\n' && contents.size() != MEM_SIZE) {
         split_line();
         return;
     }
@@ -77,27 +79,32 @@ void TextEditor::insert_character(char character) {
         t.insert(t.begin() + cursor.x, character);
     }
 
-    move_cursor(Direction::RIGHT);
     ListenerList<TextEditorListener>::call(
         &TextEditorListener::line_modified, cursor.y, t);
     ListenerList<LineUpdateListener>::call(
         &LineUpdateListener::line_updated, cursor.y, t);
+    move_cursor(Direction::RIGHT);
 }
 
 char TextEditor::backspace() {
-    auto & t = contents[cursor.y];
-
     if (cursor.x == 0) {
-        join_line();
-    } else {
-        t.erase(t.begin() + cursor.x - 1);
+        if (cursor.y != 0)
+            join_line();
+        return '\n';
     }
 
-    move_cursor(Direction::LEFT);
+    auto & t = contents[cursor.y];
+    auto ret = t[cursor.x];
+
+    t.erase(t.begin() + cursor.x - 1);
+
     ListenerList<TextEditorListener>::call(
         &TextEditorListener::line_modified, cursor.y, t);
     ListenerList<LineUpdateListener>::call(
         &LineUpdateListener::line_updated, cursor.y, t);
+    move_cursor(Direction::LEFT);
+
+    return ret;
 }
 
 const vector<string> & TextEditor::get_contents() const {
@@ -119,11 +126,41 @@ void TextEditor::set_contents(const vector<string> & in) {
 }
 
 void TextEditor::split_line() {
-    //  TODO
+    auto t = contents[cursor.y];
+    contents[cursor.y] = string(t.begin(), t.begin() + cursor.x);
+    contents.insert(contents.begin() + cursor.y + 1, string(t.begin() + cursor.x, t.end()));
+
+    for (auto i = cursor.y; i != contents.size(); ++i) {
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::line_modified, i, contents[i]);
+        ListenerList<LineUpdateListener>::call(
+            &LineUpdateListener::line_updated, i, contents[i]);
+    }
+
+    move_cursor(Direction::DOWN);
+    while (cursor.x != 0)
+        move_cursor(Direction::LEFT);
 }
 
 void TextEditor::join_line() {
-    //  TODO
+    auto & l_prev = contents[cursor.y - 1];
+    auto pos = l_prev.size();
+    auto & l_this = contents[cursor.y];
+    l_prev.insert(l_prev.end(), l_this.begin(), l_this.end());
+    l_prev.resize(line_length);
+
+    contents.erase(contents.begin() + cursor.y);
+
+    for (auto i = cursor.y - 1; i != contents.size(); ++i) {
+        ListenerList<TextEditorListener>::call(
+            &TextEditorListener::line_modified, i, contents[i]);
+        ListenerList<LineUpdateListener>::call(
+            &LineUpdateListener::line_updated, i, contents[i]);
+    }
+
+    move_cursor(Direction::UP);
+    while (pos--)
+        move_cursor(Direction::RIGHT);
 }
 
 void TextEditor::set_line(int line, const string & in) {
