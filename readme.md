@@ -5,22 +5,16 @@ Todo
 ----
 
 * ncurses mode needs an editor
-
 * finish writing unit tests!
-
 * synch instructions
 * modulo instruction?
-
 * extra tooling
     * linting
     * static analysis `scan-build`
     * fuzzing? `afl-fuzz`
-
-* display memory in editor
-
-* some 'execute' callback handler that changes highlighted row
-
-* uninitialized memory (from program file) should be zeroed/NOPed
+* NOP invalid instructions
+* re-highlight executed lines
+* move cursor properly at line-ends
 
 Done
 ----
@@ -54,6 +48,9 @@ Done
 * write special parse functions where they're needed
 * write special disassemble functions where they're needed
 * keypresses over osc
+* some 'execute' callback handler that changes highlighted row
+* uninitialized memory (from program file) should be zeroed/NOPed
+* display memory in editor
 
 Maybe
 -----

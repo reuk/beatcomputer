@@ -158,7 +158,7 @@ void TextEditor::join_line() {
 
     if (l_prev.empty()) {
         l_prev = l_this;
-    } else if (! l_this.empty()) {
+    } else if (!l_this.empty()) {
         l_prev.insert(l_prev.end(), l_this.begin(), l_this.end());
         l_prev.resize(line_length);
     }
