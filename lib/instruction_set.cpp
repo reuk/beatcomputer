@@ -73,7 +73,7 @@ InstructionR NOP::assemble_specific(const vector<string> &str) const {
     return ret;
 }
 string NOP::disassemble_specific(InstructionR instr) const {
-    return "NOP";
+    return "";
 }
 string NOP::get_tooltip() const {
     return "do nothing!";

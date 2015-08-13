@@ -12,8 +12,11 @@ Vec2::Vec2(int y, int x)
         , x(x) {
 }
 
+//  TODO
+#define MEM_SIZE 32
+
 TextEditor::TextEditor(int line_length)
-        : contents(32)
+        : contents(MEM_SIZE)
         , line_length(line_length) {
 }
 
@@ -65,10 +68,8 @@ void TextEditor::select() const {
                                            cursor);
 }
 
-#define MEM_SIZE 32
-
 void TextEditor::insert_character(char character) {
-    if (character == '\n' && contents.size() != MEM_SIZE) {
+    if (character == '\n' && cursor.y != MEM_SIZE - 1) {
         split_line();
         return;
     }
@@ -115,7 +116,7 @@ const vector<string> & TextEditor::get_contents() const {
 
 void TextEditor::set_contents(const vector<string> & in) {
     contents = in;
-    contents.resize(32);
+    contents.resize(MEM_SIZE);
 
     auto y = 0;
     for (auto line : contents) {
@@ -129,12 +130,16 @@ void TextEditor::set_contents(const vector<string> & in) {
 }
 
 void TextEditor::split_line() {
+    LOG_SCOPE;
+
     auto t = contents[cursor.y];
     contents[cursor.y] = string(t.begin(), t.begin() + cursor.x);
     contents.insert(contents.begin() + cursor.y + 1,
                     string(t.begin() + cursor.x, t.end()));
 
-    for (auto i = cursor.y; i != contents.size(); ++i) {
+    contents.resize(MEM_SIZE);
+
+    for (auto i = cursor.y; i != MEM_SIZE; ++i) {
         ListenerList<TextEditorListener>::call(
             &TextEditorListener::line_modified, i, contents[i]);
         ListenerList<LineUpdateListener>::call(
@@ -150,12 +155,18 @@ void TextEditor::join_line() {
     auto & l_prev = contents[cursor.y - 1];
     auto pos = l_prev.size();
     auto & l_this = contents[cursor.y];
-    l_prev.insert(l_prev.end(), l_this.begin(), l_this.end());
-    l_prev.resize(line_length);
+
+    if (l_prev.empty()) {
+        l_prev = l_this;
+    } else if (! l_this.empty()) {
+        l_prev.insert(l_prev.end(), l_this.begin(), l_this.end());
+        l_prev.resize(line_length);
+    }
 
     contents.erase(contents.begin() + cursor.y);
+    contents.resize(MEM_SIZE);
 
-    for (auto i = cursor.y - 1; i != contents.size(); ++i) {
+    for (auto i = cursor.y - 1; i != MEM_SIZE; ++i) {
         ListenerList<TextEditorListener>::call(
             &TextEditorListener::line_modified, i, contents[i]);
         ListenerList<LineUpdateListener>::call(

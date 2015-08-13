@@ -95,8 +95,10 @@ void Editor::line_updated(int line, const string &contents) {
                      CompileOutputListener::Type::GOOD,
                      instruction_list.tooltip(word));
             } catch (const runtime_error &re) {
-                //  probably will never happen
-                throw;
+                call(&CompileOutputListener::line_compiled,
+                     line,
+                     CompileOutputListener::Type::ERROR,
+                     re.what());
             }
             break;
         case Field::MNEMONICS:

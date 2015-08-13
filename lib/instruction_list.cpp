@@ -30,8 +30,6 @@ OpType InstructionList::get_op_type(Instruction instr) const {
 }
 
 Instruction InstructionList::assemble(string & str) const {
-    LOG_SCOPE;
-
     trim(str);
     transform(
         begin(str), end(str), begin(str), [](auto i) { return toupper(i); });
