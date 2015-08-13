@@ -5,6 +5,8 @@
 template <typename T>
 class BoxedWindow : public Window {
 public:
+    using Contents = T;
+
     template <typename... Ts>
     BoxedWindow(const std::string &title,
                 WINDOW *parent,

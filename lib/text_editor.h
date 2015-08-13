@@ -23,6 +23,8 @@ struct LineUpdateListener {
 class TextEditor : public ListenerList<TextEditorListener>,
                    public ListenerList<LineUpdateListener> {
 public:
+    TextEditor(int line_length);
+
     void load_from_file(const std::string & fname);
 
     void move_cursor(Direction direction);
@@ -36,6 +38,7 @@ public:
     void set_line(int line, const std::string & in);
 
     void split_line();
+    void join_line();
 
     template <typename T>
     void add_listener_text_editor(T t) {
@@ -50,4 +53,5 @@ public:
 private:
     std::vector<std::string> contents;
     Vec2 cursor;
+    const int line_length;
 };

@@ -11,6 +11,8 @@ Vec2::Vec2(int y, int x)
         , x(x) {
 }
 
+TextEditor::TextEditor(int line_length): line_length(line_length) {}
+
 int clamp(int in, int mini, int maxi) {
     return min(max(in, mini), maxi);
 }
@@ -27,9 +29,6 @@ void TextEditor::load_from_file(const string & fname) {
 
     set_contents(contents);
 }
-
-//  TODO
-#define LINE_LENGTH 32
 
 void TextEditor::move_cursor(Direction direction) {
     switch (direction) {
@@ -53,7 +52,7 @@ void TextEditor::move_cursor(Direction direction) {
             break;
     }
 
-    cursor.x = clamp(cursor.x, 0, min(LINE_LENGTH - 1, (int)contents[cursor.y].size()));
+    cursor.x = clamp(cursor.x, 0, min(line_length - 1, (int)contents[cursor.y].size()));
 
     ListenerList<TextEditorListener>::call(
         &TextEditorListener::cursor_moved, cursor);
@@ -72,7 +71,7 @@ void TextEditor::insert_character(char character) {
 
     auto & t = contents[cursor.y];
 
-    if (t.size() >= LINE_LENGTH) {
+    if (t.size() >= line_length) {
         t[cursor.x] = character;
     } else {
         t.insert(t.begin() + cursor.x, character);
@@ -89,7 +88,7 @@ char TextEditor::backspace() {
     auto & t = contents[cursor.y];
 
     if (cursor.x == 0) {
-
+        join_line();
     } else {
         t.erase(t.begin() + cursor.x - 1);
     }
@@ -120,6 +119,10 @@ void TextEditor::set_contents(const vector<string> & in) {
 }
 
 void TextEditor::split_line() {
+    //  TODO
+}
+
+void TextEditor::join_line() {
     //  TODO
 }
 

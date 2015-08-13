@@ -13,10 +13,12 @@ string machine_word(Instruction word) {
     return build_string(setfill('0'), setw(8), hex, word.raw);
 }
 
-Editor::Editor(const InstructionList &instruction_list)
+Editor::Editor(const InstructionList &instruction_list, int memory_w, int mnemonics_w)
         : instruction_list(instruction_list)
         , head(0)
-        , selected(Field::MNEMONICS) {
+        , selected(Field::MNEMONICS)
+        , memory(memory_w)
+        , mnemonics(mnemonics_w) {
 }
 
 void Editor::load_from_file(const string &fname) {

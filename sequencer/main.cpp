@@ -245,7 +245,9 @@ public:
                      startx)
             , il(il)
             , memory(MEMORY_LOCATIONS)
-            , editor(il)
+            , editor(il,
+                     decltype(window_machine_code)::Contents::get_width(),
+                     decltype(window_mnemonic)::Contents::get_width())
             , window_machine_code("ram", *this, HEIGHT, 0, 0)
             , window_mnemonic("code",
                               *this,

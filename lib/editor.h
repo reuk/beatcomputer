@@ -10,7 +10,7 @@
 
 class Editor : public LineUpdateListener {
 public:
-    Editor(const InstructionList &instruction_list);
+    Editor(const InstructionList &instruction_list, int memory_w, int mnemonics_w);
 
     void load_from_file(const std::string &fname);
 
