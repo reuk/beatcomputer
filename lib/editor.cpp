@@ -13,12 +13,17 @@ string machine_word(Instruction word) {
     return build_string(setfill('0'), setw(8), hex, word.raw);
 }
 
-Editor::Editor(const InstructionList &instruction_list, int memory_w, int mnemonics_w)
+Editor::Editor(const InstructionList &instruction_list,
+               int memory_w,
+               int mnemonics_w)
         : instruction_list(instruction_list)
         , head(0)
         , selected(Field::MNEMONICS)
+        , storage(32, 0)
         , memory(memory_w)
         , mnemonics(mnemonics_w) {
+    memory.add_listener_line_update(this);
+    mnemonics.add_listener_line_update(this);
 }
 
 void Editor::load_from_file(const string &fname) {
@@ -79,15 +84,19 @@ TextEditor &Editor::get_editor(Field field) {
     throw runtime_error("no such editor field");
 }
 
-void Editor::line_updated(int line, const string & contents) {
+void Editor::line_updated(int line, const string &contents) {
     switch (get_selected()) {
         case Field::MEMORY:
             try {
                 auto word = storage[line] = stol(contents, 0, 16);
                 mnemonics.set_line(line, instruction_list.disassemble(word));
-            } catch (const runtime_error & re) {
-                //  disassembly SHOULD never fail but I guess we should handle
-                //  this eventuality somehow
+                call(&CompileOutputListener::line_compiled,
+                     line,
+                     CompileOutputListener::Type::GOOD,
+                     instruction_list.tooltip(word));
+            } catch (const runtime_error &re) {
+                //  probably will never happen
+                throw;
             }
             break;
         case Field::MNEMONICS:
@@ -95,8 +104,15 @@ void Editor::line_updated(int line, const string & contents) {
                 auto copy = contents;
                 auto word = storage[line] = instruction_list.assemble(copy);
                 memory.set_line(line, machine_word(word));
-            } catch (const runtime_error & re) {
-                //  send error to error display handler
+                call(&CompileOutputListener::line_compiled,
+                     line,
+                     CompileOutputListener::Type::GOOD,
+                     instruction_list.tooltip(word));
+            } catch (const runtime_error &re) {
+                call(&CompileOutputListener::line_compiled,
+                     line,
+                     CompileOutputListener::Type::ERROR,
+                     re.what());
             }
             break;
     }

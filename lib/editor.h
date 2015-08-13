@@ -8,9 +8,23 @@
 #include <list>
 #include <string>
 
-class Editor : public LineUpdateListener {
+struct CompileOutputListener {
+    enum class Type {
+        GOOD,
+        WARNING,
+        ERROR,
+    };
+    virtual void line_compiled(int line,
+                               Type type,
+                               const std::string &output) = 0;
+};
+
+class Editor : public LineUpdateListener,
+               public ListenerList<CompileOutputListener> {
 public:
-    Editor(const InstructionList &instruction_list, int memory_w, int mnemonics_w);
+    Editor(const InstructionList &instruction_list,
+           int memory_w,
+           int mnemonics_w);
 
     void load_from_file(const std::string &fname);
 
@@ -28,7 +42,7 @@ public:
     TextEditor &get_editor(Field field);
     TextEditor &selected_editor();
 
-    void line_updated(int line, const std::string & contents) override;
+    void line_updated(int line, const std::string &contents) override;
 
 private:
     const InstructionList &instruction_list;

@@ -37,10 +37,10 @@ public:
     public:
         ScopedLog(const std::string &t)
                 : t(t) {
-            Logger::log_err(t, ": begin");
+            Logger::log(t, ": begin");
         }
         virtual ~ScopedLog() {
-            Logger::log_err(t, ": end");
+            Logger::log(t, ": end");
         }
 
     private:

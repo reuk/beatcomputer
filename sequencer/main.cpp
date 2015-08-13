@@ -90,12 +90,12 @@ public:
             : Window(parent, height, width, starty, startx) {
     }
 
-    void cursor_moved(const Vec2 & pos) override {
+    void cursor_moved(const Vec2 &pos) override {
         w_move(pos.y, pos.x);
         refresh();
     }
 
-    void line_modified(int line, const string & contents) override {
+    void line_modified(int line, const string &contents) override {
         {
             STORE_CURSOR;
 
@@ -145,7 +145,7 @@ public:
 
 class TooltipWindow : public Window,
                       public TickListener,
-                      public LineUpdateListener {
+                      public CompileOutputListener {
 public:
     TooltipWindow(WINDOW *parent,
                   int height,
@@ -153,9 +153,7 @@ public:
                   int startx,
                   const InstructionList &il,
                   const vector<Instruction> &memory)
-            : Window(parent, height, get_width(), starty, startx)
-            , il(il)
-            , memory(memory) {
+            : Window(parent, height, get_width(), starty, startx) {
     }
 
     void on_tick(int prev, int line) override {
@@ -171,30 +169,24 @@ public:
         doupdate();
     }
 
-    void line_updated(int line, const string &) override {
+    void line_compiled(int line,
+                       CompileOutputListener::Type type,
+                       const string &s) override {
         STORE_CURSOR;
-        print(line, 0, il.tooltip(memory[line]));
+
+        print(line, 0, s);
     }
 
     static int get_width() {
         return 50;
     }
-
-private:
-    const InstructionList &il;
-    const vector<Instruction> &memory;
 };
 
 class CoreCoreWindow : public Window, public TickListener {
 public:
-    CoreCoreWindow(WINDOW *parent,
-                   int height,
-                   int starty,
-                   int startx,
-                   const InstructionList &il,
-                   const Core &core)
+    CoreCoreWindow(
+        WINDOW *parent, int height, int starty, int startx, const Core &core)
             : Window(parent, height, get_width(), starty, startx)
-            , il(il)
             , core(core) {
     }
 
@@ -225,7 +217,6 @@ public:
     }
 
 private:
-    const InstructionList &il;
     const Core &core;
 };
 
@@ -269,16 +260,13 @@ public:
                           decltype(window_machine_code)::get_width() +
                               decltype(window_mnemonic)::get_width() +
                               decltype(window_tooltip)::get_width(),
-                          il,
                           core) {
         editor.memory.add_listener_text_editor(
             &window_machine_code.get_contents());
         editor.mnemonics.add_listener_text_editor(
             &window_mnemonic.get_contents());
 
-        editor.memory.add_listener_line_update(&window_tooltip.get_contents());
-        editor.mnemonics.add_listener_line_update(
-            &window_tooltip.get_contents());
+        editor.add_listener(&window_tooltip.get_contents());
 
         add_listener(&window_machine_code.get_contents());
         add_listener(&window_mnemonic.get_contents());
@@ -426,7 +414,8 @@ int main(int argc, char **argv) {
                         command = make_unique<MoveCommand>(Direction::UP);
                     } else if (key == '\t') {
                         command = make_unique<SelectCommand>();
-                    } else if (key == KEY_BACKSPACE || key == KEY_DC || key == 127) {
+                    } else if (key == KEY_BACKSPACE || key == KEY_DC ||
+                               key == 127) {
                         command = make_unique<BackspaceCommand>();
                     } else if (isalnum(key) || key == '\n' || key == ' ') {
                         command = make_unique<InsertCommand>(key);

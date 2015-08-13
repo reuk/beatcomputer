@@ -1,6 +1,7 @@
 #include "text_editor.h"
 
 #include "trim.h"
+#include "logger.h"
 
 #include <fstream>
 
@@ -11,23 +12,23 @@ Vec2::Vec2(int y, int x)
         , x(x) {
 }
 
-TextEditor::TextEditor(int line_length): line_length(line_length) {}
+TextEditor::TextEditor(int line_length)
+        : contents(32)
+        , line_length(line_length) {
+}
 
 int clamp(int in, int mini, int maxi) {
     return min(max(in, mini), maxi);
 }
 
 void TextEditor::load_from_file(const string & fname) {
-    contents.clear();
-
+    vector<string> temp;
     ifstream infile(fname);
     for (string line; getline(infile, line);) {
-        if (!trim(line).empty()) {
-            contents.push_back(line);
-        }
+        temp.push_back(line);
     }
 
-    set_contents(contents);
+    set_contents(temp);
 }
 
 void TextEditor::move_cursor(Direction direction) {
@@ -52,15 +53,16 @@ void TextEditor::move_cursor(Direction direction) {
             break;
     }
 
-    cursor.x = clamp(cursor.x, 0, min(line_length - 1, (int)contents[cursor.y].size()));
+    cursor.x = clamp(
+        cursor.x, 0, min(line_length - 1, (int)contents[cursor.y].size()));
 
-    ListenerList<TextEditorListener>::call(
-        &TextEditorListener::cursor_moved, cursor);
+    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved,
+                                           cursor);
 }
 
 void TextEditor::select() const {
-    ListenerList<TextEditorListener>::call(
-        &TextEditorListener::cursor_moved, cursor);
+    ListenerList<TextEditorListener>::call(&TextEditorListener::cursor_moved,
+                                           cursor);
 }
 
 #define MEM_SIZE 32
@@ -113,6 +115,7 @@ const vector<string> & TextEditor::get_contents() const {
 
 void TextEditor::set_contents(const vector<string> & in) {
     contents = in;
+    contents.resize(32);
 
     auto y = 0;
     for (auto line : contents) {
@@ -128,7 +131,8 @@ void TextEditor::set_contents(const vector<string> & in) {
 void TextEditor::split_line() {
     auto t = contents[cursor.y];
     contents[cursor.y] = string(t.begin(), t.begin() + cursor.x);
-    contents.insert(contents.begin() + cursor.y + 1, string(t.begin() + cursor.x, t.end()));
+    contents.insert(contents.begin() + cursor.y + 1,
+                    string(t.begin() + cursor.x, t.end()));
 
     for (auto i = cursor.y; i != contents.size(); ++i) {
         ListenerList<TextEditorListener>::call(

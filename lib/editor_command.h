@@ -26,6 +26,7 @@ class BackspaceCommand : public EditorCommand {
 public:
     void do_command(Editor &e) override;
     void undo_command(Editor &e) override;
+
 private:
     char character;
 };

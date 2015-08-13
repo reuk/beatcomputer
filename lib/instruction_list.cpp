@@ -30,12 +30,17 @@ OpType InstructionList::get_op_type(Instruction instr) const {
 }
 
 Instruction InstructionList::assemble(string & str) const {
+    LOG_SCOPE;
+
     trim(str);
     transform(
         begin(str), end(str), begin(str), [](auto i) { return toupper(i); });
     istringstream to_tokenize(str);
     vector<string> tokens((istream_iterator<string>(to_tokenize)),
                           istream_iterator<string>());
+
+    if (tokens.empty())
+        throw runtime_error("can't assemble blank line");
 
     auto i = assembly_table.find(tokens.front());
     if (i == assembly_table.end()) {
