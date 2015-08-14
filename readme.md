@@ -14,7 +14,6 @@ Todo
     * fuzzing? `afl-fuzz`
 * NOP invalid instructions
 * re-highlight executed lines
-* move cursor properly at line-ends
 
 Done
 ----
@@ -51,6 +50,7 @@ Done
 * some 'execute' callback handler that changes highlighted row
 * uninitialized memory (from program file) should be zeroed/NOPed
 * display memory in editor
+* move cursor properly at line-ends
 
 Maybe
 -----

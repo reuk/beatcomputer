@@ -49,10 +49,20 @@ void TextEditor::move_cursor(Direction direction) {
             cursor.y += 1;
             break;
         case Direction::LEFT:
-            cursor.x -= 1;
+            if (cursor.x == 0 && cursor.y > 0) {
+                cursor.y -= 1;
+                cursor.x = contents[cursor.y].size();
+            } else {
+                cursor.x -= 1;
+            }
             break;
         case Direction::RIGHT:
-            cursor.x += 1;
+            if (cursor.x == contents[cursor.y].size() && cursor.y < contents.size() - 1) {
+                cursor.y += 1;
+                cursor.x = 0;
+            } else {
+                cursor.x += 1;
+            }
             break;
     }
 
