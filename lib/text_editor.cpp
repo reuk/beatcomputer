@@ -12,16 +12,21 @@ Vec2::Vec2(int y, int x)
         , x(x) {
 }
 
-//  TODO
-#define MEM_SIZE 32
-
-TextEditor::TextEditor(int line_length)
-        : contents(MEM_SIZE)
-        , line_length(line_length) {
+TextEditor::TextEditor(int memory_size,
+                       int line_length,
+                       const string & default_string)
+        : memory_size(memory_size)
+        , line_length(line_length)
+        , default_string(default_string)
+        , contents(memory_size, default_string) {
 }
 
 int clamp(int in, int mini, int maxi) {
     return min(max(in, mini), maxi);
+}
+
+void TextEditor::blank() {
+    set_contents(vector<string>(memory_size, default_string));
 }
 
 void TextEditor::load_from_file(const string & fname) {
@@ -57,7 +62,8 @@ void TextEditor::move_cursor(Direction direction) {
             }
             break;
         case Direction::RIGHT:
-            if (cursor.x == contents[cursor.y].size() && cursor.y < contents.size() - 1) {
+            if (cursor.x == contents[cursor.y].size() &&
+                cursor.y < contents.size() - 1) {
                 cursor.y += 1;
                 cursor.x = 0;
             } else {
@@ -79,7 +85,7 @@ void TextEditor::select() const {
 }
 
 void TextEditor::insert_character(char character) {
-    if (character == '\n' && cursor.y != MEM_SIZE - 1) {
+    if (character == '\n' && cursor.y != memory_size - 1) {
         split_line();
         return;
     }
@@ -126,7 +132,7 @@ const vector<string> & TextEditor::get_contents() const {
 
 void TextEditor::set_contents(const vector<string> & in) {
     contents = in;
-    contents.resize(MEM_SIZE);
+    contents.resize(memory_size, default_string);
 
     auto y = 0;
     for (auto line : contents) {
@@ -147,9 +153,9 @@ void TextEditor::split_line() {
     contents.insert(contents.begin() + cursor.y + 1,
                     string(t.begin() + cursor.x, t.end()));
 
-    contents.resize(MEM_SIZE);
+    contents.resize(memory_size, default_string);
 
-    for (auto i = cursor.y; i != MEM_SIZE; ++i) {
+    for (auto i = cursor.y; i != memory_size; ++i) {
         ListenerList<TextEditorListener>::call(
             &TextEditorListener::line_modified, i, contents[i]);
         ListenerList<LineUpdateListener>::call(
@@ -174,9 +180,9 @@ void TextEditor::join_line() {
     }
 
     contents.erase(contents.begin() + cursor.y);
-    contents.resize(MEM_SIZE);
+    contents.resize(memory_size, default_string);
 
-    for (auto i = cursor.y - 1; i != MEM_SIZE; ++i) {
+    for (auto i = cursor.y - 1; i != memory_size; ++i) {
         ListenerList<TextEditorListener>::call(
             &TextEditorListener::line_modified, i, contents[i]);
         ListenerList<LineUpdateListener>::call(

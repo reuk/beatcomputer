@@ -23,16 +23,16 @@ class Editor : public LineUpdateListener,
                public ListenerList<CompileOutputListener> {
 public:
     Editor(const InstructionList &instruction_list,
+           std::vector<Instruction> &storage,
            int memory_w,
            int mnemonics_w);
 
     void load_from_file(const std::string &fname);
+    void blank();
 
     void do_command(std::unique_ptr<EditorCommand> &&command);
     void undo_command();
     void redo_command();
-
-    std::vector<Instruction> get_memory() const;
 
     enum class Field { MEMORY, MNEMONICS };
 
@@ -45,13 +45,13 @@ public:
     void line_updated(int line, const std::string &contents) override;
 
 private:
+    std::vector<Instruction> &storage;
+
     const InstructionList &instruction_list;
     std::vector<std::unique_ptr<EditorCommand>> commands;
     decltype(commands)::size_type head;
 
     Field selected;
-
-    std::vector<Instruction> storage;
 
 public:
     TextEditor memory;

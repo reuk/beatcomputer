@@ -73,8 +73,9 @@ public:
             : prev(0) {
     }
     void tick(int line) {
-        on_tick(prev, line);
+        auto p = prev;
         prev = line;
+        on_tick(p, line);
     }
     virtual void on_tick(int prev, int line) = 0;
     int get_tick_line() const {
@@ -159,15 +160,41 @@ public:
                   int startx,
                   const InstructionList &il,
                   const vector<Instruction> &memory)
-            : Window(parent, height, get_width(), starty, startx) {
+            : Window(parent, height, get_width(), starty, startx)
+            , line_status(memory.size(), CompileOutputListener::Type::GOOD) {
+    }
+
+    void color_line(int line, CompileOutputListener::Type type) {
+        line_status[line] = type;
+
+        switch (type) {
+            case CompileOutputListener::Type::GOOD:
+                if (line == get_tick_line())
+                    w_mvchgat(line, 0, -1, WA_BOLD, 1);
+                else
+                    w_mvchgat(line, 0, -1, WA_NORMAL, 0);
+                break;
+            case CompileOutputListener::Type::WARNING:
+                if (line == get_tick_line())
+                    w_mvchgat(line, 0, -1, WA_BOLD, 5);
+                else
+                    w_mvchgat(line, 0, -1, WA_BOLD, 3);
+                break;
+            case CompileOutputListener::Type::ERROR:
+                if (line == get_tick_line())
+                    w_mvchgat(line, 0, -1, WA_BOLD, 4);
+                else
+                    w_mvchgat(line, 0, -1, WA_BOLD, 2);
+                break;
+        }
     }
 
     void on_tick(int prev, int line) override {
         {
             STORE_CURSOR;
 
-            w_mvchgat(prev, 0, -1, WA_NORMAL, 0);
-            w_mvchgat(line, 0, -1, WA_BOLD, 1);
+            color_line(prev, line_status[prev]);
+            color_line(line, line_status[line]);
 
             touch();
         }
@@ -184,24 +211,7 @@ public:
             w_clrtoeol();
             print(line, 0, contents);
 
-            switch (type) {
-                case CompileOutputListener::Type::GOOD:
-                    if (line == get_tick_line())
-                        w_mvchgat(line, 0, -1, WA_BOLD, 1);
-                    break;
-                case CompileOutputListener::Type::WARNING:
-                    if (line == get_tick_line())
-                        w_mvchgat(line, 0, -1, WA_BOLD, 5);
-                    else
-                        w_mvchgat(line, 0, -1, WA_BOLD, 3);
-                    break;
-                case CompileOutputListener::Type::ERROR:
-                    if (line == get_tick_line())
-                        w_mvchgat(line, 0, -1, WA_BOLD, 4);
-                    else
-                        w_mvchgat(line, 0, -1, WA_BOLD, 2);
-                    break;
-            }
+            color_line(line, type);
 
             touch();
         }
@@ -211,6 +221,9 @@ public:
     static int get_width() {
         return 50;
     }
+
+private:
+    vector<CompileOutputListener::Type> line_status;
 };
 
 class CoreCoreWindow : public Window, public TickListener {
@@ -268,6 +281,7 @@ public:
             , il(il)
             , memory(MEMORY_LOCATIONS)
             , editor(il,
+                     memory,
                      decltype(window_machine_code)::Contents::get_width(),
                      decltype(window_mnemonic)::Contents::get_width())
             , window_machine_code("ram", *this, HEIGHT, 0, 0)
@@ -320,10 +334,11 @@ public:
 
     void load_from_file(const string &fname) {
         editor.load_from_file(fname);
-        set_memory(editor.get_memory());
+        call(&TickListener::tick, 0);
+    }
 
-        window_mnemonic.get_contents().cursor_moved(Vec2());
-
+    void blank() {
+        editor.blank();
         call(&TickListener::tick, 0);
     }
 
@@ -349,11 +364,6 @@ int main(int argc, char **argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 2) {
-        cout << "Expected an input file" << endl;
-        return EXIT_FAILURE;
-    }
-
     InstructionList instruction_list(
         InstructionManager(FLAGS_o_port, FLAGS_osc_prefix, FLAGS_osc_address));
 
@@ -372,7 +382,12 @@ int main(int argc, char **argv) {
     init_pair(5, COLOR_YELLOW, COLOR_WHITE);
 
     CoreWindow cw(stdscr, instruction_list, 0, 0);
-    cw.load_from_file(argv[1]);
+    cw.blank();
+
+    if (argc == 2) {
+        cw.load_from_file(argv[1]);
+    }
+
     doupdate();
 
     mutex global_mutex;
