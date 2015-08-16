@@ -187,7 +187,7 @@ InstructionI BNOT_I::assemble_specific(const vector<string> &str) const {
     InstructionI r;
     r.op = get_id_code();
     r.rs = parse_register(str[0]);
-    r.immediate = parse_register(str[1]);
+    r.immediate = parse_immediate(str[1]);
     r.rt = 0;
     return r;
 }
@@ -222,7 +222,7 @@ InstructionI NOT_I::assemble_specific(const vector<string> &str) const {
     InstructionI r;
     r.op = get_id_code();
     r.rs = parse_register(str[0]);
-    r.immediate = parse_register(str[1]);
+    r.immediate = parse_immediate(str[1]);
     r.rt = 0;
     return r;
 }
@@ -257,7 +257,7 @@ InstructionI MOVE_I::assemble_specific(const vector<string> &str) const {
     InstructionI r;
     r.op = get_id_code();
     r.rs = parse_register(str[0]);
-    r.immediate = parse_register(str[1]);
+    r.immediate = parse_immediate(str[1]);
     r.rt = 0;
     return r;
 }

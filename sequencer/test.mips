@@ -1,14 +1,12 @@
-BOR     r1 r1 0x1
-BOR     r2 r2 0x5
+MOVE    r1 0x1
+MOVE    r2 0x5
 ADD     r3 r2 r1
-
 ADD     r4 r4 0x10
 ADD     r5 r4 0x20
 ADD     r10 r10 0x1
 LOAD    r11 r10 0
 ADD     r11 r11 0x1000
 SAVE    r11 r12 0x1
-
 OSC     r12 r11 r10
 JGE     r11 r5 0
 NOP
